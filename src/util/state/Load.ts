@@ -472,6 +472,17 @@ export async function loadSessionData(sessionPath: string, email: string, isMobi
         if (shouldLoad && fs.existsSync(fingerprintFile)) {
             const fingerprintData = await fs.promises.readFile(fingerprintFile, 'utf-8')
             fingerprint = JSON.parse(fingerprintData)
+
+            // CRITICAL: Validate fingerprint age (regenerate if too old)
+            // Old fingerprints become suspicious as browser versions update
+            const fingerprintStat = await fs.promises.stat(fingerprintFile)
+            const ageInDays = (Date.now() - fingerprintStat.mtimeMs) / (1000 * 60 * 60 * 24)
+
+            // SECURITY: Regenerate fingerprint if older than 30 days
+            if (ageInDays > 30) {
+                // Mark as undefined to trigger regeneration
+                fingerprint = undefined as any
+            }
         }
 
         return {

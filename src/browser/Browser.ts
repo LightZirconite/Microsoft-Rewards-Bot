@@ -6,6 +6,7 @@ import { MicrosoftRewardsBot } from '../index'
 import { AccountProxy } from '../interface/Account'
 import { updateFingerprintUserAgent } from '../util/browser/UserAgent'
 import { loadSessionData, saveFingerprintData } from '../util/state/Load'
+import { logFingerprintValidation, validateFingerprintConsistency } from '../util/validation/FingerprintValidator'
 
 class Browser {
     private bot: MicrosoftRewardsBot
@@ -40,14 +41,33 @@ class Browser {
 
             const isLinux = process.platform === 'linux'
 
-            // Base arguments for stability
+            // CRITICAL: Anti-detection Chromium arguments
             const baseArgs = [
                 '--no-sandbox',
                 '--mute-audio',
                 '--disable-setuid-sandbox',
                 '--ignore-certificate-errors',
                 '--ignore-certificate-errors-spki-list',
-                '--ignore-ssl-errors'
+                '--ignore-ssl-errors',
+                // ANTI-DETECTION: Disable blink features that expose automation
+                '--disable-blink-features=AutomationControlled',
+                // ANTI-DETECTION: Disable automation extensions
+                '--disable-extensions',
+                // ANTI-DETECTION: Start maximized (humans rarely start in specific window sizes)
+                '--start-maximized',
+                // ANTI-DETECTION: Disable save password bubble
+                '--disable-save-password-bubble',
+                // ANTI-DETECTION: Disable background timer throttling
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding',
+                // ANTI-DETECTION: Disable infobars
+                '--disable-infobars',
+                // PERFORMANCE: Disable unnecessary features
+                '--disable-breakpad',
+                '--disable-component-update',
+                '--no-first-run',
+                '--no-default-browser-check'
             ]
 
             // Linux stability fixes
@@ -80,6 +100,16 @@ class Browser {
 
         const sessionData = await loadSessionData(this.bot.config.sessionPath, email, this.bot.isMobile, saveFingerprint)
         const fingerprint = sessionData.fingerprint ? sessionData.fingerprint : await this.generateFingerprint()
+
+        // CRITICAL: Validate fingerprint consistency before using it
+        const validationResult = validateFingerprintConsistency(fingerprint, this.bot.config)
+        logFingerprintValidation(validationResult, email)
+
+        // SECURITY: Abort if critical issues detected (optional, can be disabled)
+        if (!validationResult.valid && this.bot.config.riskManagement?.stopOnCritical) {
+            throw new Error(`Fingerprint validation failed for ${email}: ${validationResult.criticalIssues.join(', ')}`)
+        }
+
         const context = await newInjectedContext(browser as unknown as import('playwright').Browser, { fingerprint: fingerprint })
 
         const globalTimeout = this.bot.config.browser?.globalTimeout ?? 30000
@@ -88,14 +118,153 @@ class Browser {
         try {
             context.on('page', async (page) => {
                 try {
+                    // IMPROVED: Randomized viewport sizes to avoid fingerprinting
+                    // Fixed sizes are detectable bot patterns
                     const viewport = this.bot.isMobile
-                        ? { width: 390, height: 844 }
-                        : { width: 1280, height: 800 }
+                        ? {
+                            // Mobile: Vary between common phone screen sizes
+                            width: 360 + Math.floor(Math.random() * 60), // 360-420px
+                            height: 640 + Math.floor(Math.random() * 256) // 640-896px
+                        }
+                        : {
+                            // Desktop: Vary between common desktop resolutions
+                            width: 1280 + Math.floor(Math.random() * 640), // 1280-1920px
+                            height: 720 + Math.floor(Math.random() * 360) // 720-1080px
+                        }
 
                     await page.setViewportSize(viewport)
 
-                    // Standard styling
+                    // CRITICAL: Advanced anti-detection scripts (MUST run before page load)
                     await page.addInitScript(() => {
+                        // ═══════════════════════════════════════════════════════════════
+                        // ANTI-DETECTION LAYER 1: Remove automation indicators
+                        // ═══════════════════════════════════════════════════════════════
+
+                        // CRITICAL: Remove navigator.webdriver (biggest bot indicator)
+                        try {
+                            Object.defineProperty(navigator, 'webdriver', {
+                                get: () => undefined,
+                                configurable: true
+                            })
+                        } catch { /* Already defined */ }
+
+                        // CRITICAL: Mask Chrome DevTools Protocol detection
+                        // Microsoft checks for window.chrome.runtime
+                        try {
+                            // @ts-ignore - window.chrome is intentionally injected
+                            if (!window.chrome) {
+                                // @ts-ignore
+                                window.chrome = {}
+                            }
+                            // @ts-ignore
+                            if (!window.chrome.runtime) {
+                                // @ts-ignore
+                                window.chrome.runtime = {
+                                    // @ts-ignore
+                                    connect: () => { },
+                                    // @ts-ignore
+                                    sendMessage: () => { }
+                                }
+                            }
+                        } catch { /* Chrome object may be frozen */ }
+
+                        // ═══════════════════════════════════════════════════════════════
+                        // ANTI-DETECTION LAYER 2: WebGL & Canvas fingerprint randomization
+                        // ═══════════════════════════════════════════════════════════════
+
+                        // CRITICAL: Add noise to Canvas fingerprinting
+                        // Microsoft uses Canvas to detect identical browser instances
+                        try {
+                            const originalToDataURL = HTMLCanvasElement.prototype.toDataURL
+                            const originalGetImageData = CanvasRenderingContext2D.prototype.getImageData
+
+                            // Random noise generator (consistent per page load, different per session)
+                            const noise = Math.random() * 0.0001
+
+                            HTMLCanvasElement.prototype.toDataURL = function (...args) {
+                                const context = this.getContext('2d')
+                                if (context) {
+                                    // Add imperceptible noise
+                                    const imageData = context.getImageData(0, 0, this.width, this.height)
+                                    for (let i = 0; i < imageData.data.length; i += 4) {
+                                        imageData.data[i] = imageData.data[i]! + noise // R
+                                        imageData.data[i + 1] = imageData.data[i + 1]! + noise // G
+                                        imageData.data[i + 2] = imageData.data[i + 2]! + noise // B
+                                    }
+                                    context.putImageData(imageData, 0, 0)
+                                }
+                                return originalToDataURL.apply(this, args)
+                            }
+
+                            CanvasRenderingContext2D.prototype.getImageData = function (...args) {
+                                const imageData = originalGetImageData.apply(this, args)
+                                // Add noise to raw pixel data
+                                for (let i = 0; i < imageData.data.length; i += 10) {
+                                    imageData.data[i] = imageData.data[i]! + noise
+                                }
+                                return imageData
+                            }
+                        } catch { /* Canvas override may fail in strict mode */ }
+
+                        // CRITICAL: WebGL fingerprint randomization
+                        try {
+                            const getParameter = WebGLRenderingContext.prototype.getParameter
+                            WebGLRenderingContext.prototype.getParameter = function (parameter) {
+                                // Randomize UNMASKED_VENDOR_WEBGL and UNMASKED_RENDERER_WEBGL
+                                if (parameter === 37445) { // UNMASKED_VENDOR_WEBGL
+                                    return 'Intel Inc.'
+                                }
+                                if (parameter === 37446) { // UNMASKED_RENDERER_WEBGL
+                                    return 'Intel Iris OpenGL Engine'
+                                }
+                                return getParameter.apply(this, [parameter])
+                            }
+                        } catch { /* WebGL override may fail */ }
+
+                        // ═══════════════════════════════════════════════════════════════
+                        // ANTI-DETECTION LAYER 3: Permissions API masking
+                        // ═══════════════════════════════════════════════════════════════
+
+                        // CRITICAL: Mask permissions query (bots have different permissions)
+                        try {
+                            const originalQuery = navigator.permissions.query
+                            // @ts-ignore
+                            navigator.permissions.query = (parameters) => {
+                                // Always return 'prompt' for notifications (human-like)
+                                if (parameters.name === 'notifications') {
+                                    return Promise.resolve({ state: 'prompt', onchange: null })
+                                }
+                                return originalQuery(parameters)
+                            }
+                        } catch { /* Permissions API may not be available */ }
+
+                        // ═══════════════════════════════════════════════════════════════
+                        // ANTI-DETECTION LAYER 4: Plugin/MIME type consistency
+                        // ═══════════════════════════════════════════════════════════════
+
+                        // CRITICAL: Add realistic plugins (headless browsers have none)
+                        try {
+                            Object.defineProperty(navigator, 'plugins', {
+                                get: () => [
+                                    {
+                                        name: 'PDF Viewer',
+                                        description: 'Portable Document Format',
+                                        filename: 'internal-pdf-viewer',
+                                        length: 2
+                                    },
+                                    {
+                                        name: 'Chrome PDF Viewer',
+                                        description: 'Portable Document Format',
+                                        filename: 'internal-pdf-viewer',
+                                        length: 2
+                                    }
+                                ]
+                            })
+                        } catch { /* Plugins may be frozen */ }
+
+                        // ═══════════════════════════════════════════════════════════════
+                        // Standard styling (non-detection related)
+                        // ═══════════════════════════════════════════════════════════════
                         try {
                             const style = document.createElement('style')
                             style.id = '__mrs_fit_style'
