@@ -134,7 +134,7 @@
     },
     // === DASHBOARD ===
     "dashboard": {
-        "enabled": false,
+        "enabled": false, // autostart the dashboard with the bot
         "port": 3000,
         "host": "127.0.0.1"
     },
@@ -144,7 +144,12 @@
     // Time is based on YOUR computer/server timezone (automatically detected)
     "scheduling": {
         "enabled": false, // Set to true to enable automatic daily runs
-        "time": "09:00" // Time in 24h format (HH:MM) - e.g., "09:00" = 9 AM, "21:30" = 9:30 PM
+        "time": "09:00", // Time in 24h format (HH:MM) - e.g., "09:00" = 9 AM, "21:30" = 9:30 PM
+        "jitter": {
+            "enabled": false, // If true, apply a small daily offset to avoid exact-time runs
+            "minMinutesBefore": 40, // Max minutes to start before the scheduled time
+            "maxMinutesAfter": 20 // Max minutes to start after the scheduled time
+        }
     },
     // === UPDATES ===
     "update": {

@@ -202,6 +202,11 @@ export interface ConfigScheduling {
     cron?: {           // Legacy cron format (for backwards compatibility) - DEPRECATED
         schedule?: string; // Cron expression - e.g., "0 9 * * *" for 9 AM daily
     };
+    jitter?: {
+        enabled?: boolean; // If true, apply random +/- offset around scheduled time
+        minMinutesBefore?: number; // How many minutes before the scheduled time we may start (default 20)
+        maxMinutesAfter?: number;  // How many minutes after the scheduled time we may start (default 30)
+    };
 }
 
 export interface ConfigErrorReporting {
