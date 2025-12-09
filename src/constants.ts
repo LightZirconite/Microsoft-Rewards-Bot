@@ -130,7 +130,7 @@ export const DISCORD = {
     COLOR_GREEN: 0x00D26A,
     COLOR_GRAY: 0x95A5A6,
     WEBHOOK_USERNAME: 'Microsoft-Rewards-Bot',
-    AVATAR_URL: 'https://raw.githubusercontent.com/LightZirconite/Microsoft-Rewards-Bot/main/assets/logo.png'
+    AVATAR_URL: 'https://raw.githubusercontent.com/Rempacious/Microsoft-Rewards-Bot/main/assets/logo.png'
 } as const
 
 export const LOGGER_CLEANUP = {

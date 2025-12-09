@@ -281,7 +281,7 @@ async function checkVersion() {
     const localVersion = localPkg.version
 
     // Fetch remote version from GitHub API (no cache)
-    const repoOwner = 'LightZirconite'
+    const repoOwner = 'Rempacious'
     const repoName = 'Microsoft-Rewards-Bot'
     const branch = 'main'
 
@@ -448,7 +448,7 @@ async function performUpdate() {
 
   // Step 3: Download latest code from GitHub
   process.stdout.write('📥 Downloading...')
-  const repoOwner = 'LightZirconite'
+  const repoOwner = 'Rempacious'
   const repoName = 'Microsoft-Rewards-Bot'
   const branch = 'main'
   const archiveUrl = `https://github.com/${repoOwner}/${repoName}/archive/refs/heads/${branch}.zip`

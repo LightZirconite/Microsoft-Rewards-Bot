@@ -64,7 +64,7 @@ export class SearchOnBing extends Workers {
                 // Fetch from the repo directly so the user doesn't need to redownload the script for the new activities
                 const response = await this.bot.axios.request({
                     method: 'GET',
-                    url: 'https://raw.githubusercontent.com/LightZirconite/Microsoft-Rewards-Bot/refs/heads/main/src/functions/queries.json'
+                    url: 'https://raw.githubusercontent.com/Rempacious/Microsoft-Rewards-Bot/refs/heads/main/src/functions/queries.json'
                 })
                 queries = response.data
             }

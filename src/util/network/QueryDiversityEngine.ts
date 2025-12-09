@@ -152,7 +152,8 @@ export class QueryDiversityEngine {
    */
   private async fetchGoogleTrends(): Promise<string[]> {
     try {
-      const data = await this.fetchHttp('https://trends.google.com/trends/api/dailytrends?geo=US')
+      // Google Trends API requires additional parameters for reliability
+      const data = await this.fetchHttp('https://trends.google.com/trends/api/dailytrends?hl=en-US&tz=-480&geo=US&ns=15')
       const cleaned = data.toString().replace(')]}\',', '')
       const parsed = JSON.parse(cleaned)
 
