@@ -48,6 +48,9 @@ npm start
 | 🛠️ **Account Creator** | Automated Microsoft account registration |
 | 💾 **Job State** | Resume-on-crash, skip completed accounts |
 
+<img width="1147" height="1082" alt="image" src="https://github.com/user-attachments/assets/e337cad6-dc8d-40eb-8b08-53da5545b209" />
+
+
 ## Documentation
 
 📚 **[Full Documentation](docs/index.md)** — Setup guides, configuration, scheduling, troubleshooting.
