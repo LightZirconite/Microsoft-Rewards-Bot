@@ -262,12 +262,13 @@ export class Login {
             this.bot.log(this.bot.isMobile, 'LOGIN', 'Login complete')
             this.totpHandler.setTotpSecret(undefined)
 
-            // Stop Escape watcher after successful login
-            this.passkeyHandler.stopEscapeWatcher()
+            // CRITICAL: Keep Escape watcher running for 10 more seconds
+            // Bluetooth/Windows Hello dialogs appear AFTER login completion
+            this.bot.log(this.bot.isMobile, 'LOGIN-ESCAPE', 'Keeping Escape watcher active for 10s (dialogs may appear after login)', 'log', 'cyan')
+            setTimeout(() => {
+                this.passkeyHandler.stopEscapeWatcher()
+            }, 10000)
         } catch (e) {
-            // Stop Escape watcher on error
-            this.passkeyHandler.stopEscapeWatcher()
-
             const errorMessage = e instanceof Error ? e.message : String(e)
             const stackTrace = e instanceof Error ? e.stack : undefined
             this.bot.log(this.bot.isMobile, 'LOGIN', `Failed login: ${errorMessage}${stackTrace ? '\nStack: ' + stackTrace.split('\n').slice(0, 3).join(' | ') : ''}`, 'error')

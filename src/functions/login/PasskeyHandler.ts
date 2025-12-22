@@ -70,6 +70,16 @@ export class PasskeyHandler {
     public async handlePasskeyPrompts(page: Page, context: 'main' | 'oauth') {
         let did = false
 
+        // CRITICAL: Send Escape key FIRST to dismiss any native OS dialogs (Bluetooth, Windows Hello)
+        // These dialogs appear AFTER password/TOTP and cannot be dismissed via DOM clicks
+        try {
+            await page.keyboard.press('Escape')
+            await page.waitForTimeout(100) // Brief wait for dialog to close
+            this.bot.log(this.bot.isMobile, 'PASSKEY-ESCAPE', 'Sent Escape key to dismiss native dialogs', 'log', 'green')
+        } catch {
+            // Silent failure - page might not be ready
+        }
+
         // Early exit for passkey creation flows (common on mobile): hit cancel/skip if present
         const currentUrl = page.url()
         if (/fido\/create|passkey/i.test(currentUrl)) {
