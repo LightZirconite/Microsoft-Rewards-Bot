@@ -228,6 +228,9 @@ export class Login {
 
             await this.disableFido(page)
 
+            // CRITICAL: Start automatic Escape sender to dismiss native OS dialogs
+            this.passkeyHandler.startEscapeWatcher(page)
+
             const [reloadResult, totpResult, portalCheck] = await Promise.allSettled([
                 this.bot.browser.utils.reloadBadPage(page),
                 this.totpHandler.tryAutoTotp(page, 'initial landing'),
@@ -258,7 +261,13 @@ export class Login {
             await saveSessionData(this.bot.config.sessionPath, page.context(), email, this.bot.isMobile)
             this.bot.log(this.bot.isMobile, 'LOGIN', 'Login complete')
             this.totpHandler.setTotpSecret(undefined)
+
+            // Stop Escape watcher after successful login
+            this.passkeyHandler.stopEscapeWatcher()
         } catch (e) {
+            // Stop Escape watcher on error
+            this.passkeyHandler.stopEscapeWatcher()
+
             const errorMessage = e instanceof Error ? e.message : String(e)
             const stackTrace = e instanceof Error ? e.stack : undefined
             this.bot.log(this.bot.isMobile, 'LOGIN', `Failed login: ${errorMessage}${stackTrace ? '\nStack: ' + stackTrace.split('\n').slice(0, 3).join(' | ') : ''}`, 'error')

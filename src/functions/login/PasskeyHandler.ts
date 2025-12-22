@@ -31,55 +31,40 @@ export class PasskeyHandler {
         }).catch(logError('LOGIN-FIDO', 'Route interception setup failed', this.bot.isMobile))
     }
 
+    private escapeWatcherInterval: NodeJS.Timeout | null = null
+
     /**
-     * Setup dialog handlers to automatically dismiss native browser dialogs
-     * CRITICAL: This handles Bluetooth/Windows Hello/Passkey prompts that appear as native browser dialogs
-     * These are NOT DOM elements and cannot be clicked - they must be dismissed via page.on('dialog')
+     * Start automatic Escape key sender to dismiss native OS dialogs (Bluetooth, Windows Hello)
+     * CRITICAL: Native system dialogs cannot be dismissed via Playwright dialog handlers
+     * They can only be closed with Escape key (as user discovered)
      */
-    public setupDialogHandlers(page: Page) {
-        // Remove any existing listeners to prevent duplicates
-        page.removeAllListeners('dialog')
+    public startEscapeWatcher(page: Page) {
+        // Stop any existing watcher
+        this.stopEscapeWatcher()
 
-        page.on('dialog', async (dialog) => {
-            const message = dialog.message()
-            const type = dialog.type()
+        this.bot.log(this.bot.isMobile, 'LOGIN-ESCAPE', 'Starting automatic Escape sender (500ms interval)', 'log', 'cyan')
 
-            this.bot.log(
-                this.bot.isMobile,
-                'LOGIN-DIALOG',
-                `Native browser dialog detected: [${type}] "${message.substring(0, 100)}"`,
-                'warn'
-            )
-
-            // Auto-dismiss all dialogs (alert, confirm, prompt, beforeunload)
-            // For passkey/Bluetooth prompts, we want to DISMISS (equivalent to Cancel)
+        this.escapeWatcherInterval = setInterval(async () => {
             try {
-                if (type === 'beforeunload') {
-                    // Accept beforeunload to allow navigation
-                    await dialog.accept()
-                    this.bot.log(this.bot.isMobile, 'LOGIN-DIALOG', 'Accepted beforeunload dialog', 'log', 'green')
-                } else {
-                    // Dismiss all other dialogs (passkey, Bluetooth, alerts)
-                    await dialog.dismiss()
-                    this.bot.log(
-                        this.bot.isMobile,
-                        'LOGIN-DIALOG',
-                        `Dismissed ${type} dialog: "${message.substring(0, 50)}"`,
-                        'log',
-                        'green'
-                    )
-                }
-            } catch (error) {
-                this.bot.log(
-                    this.bot.isMobile,
-                    'LOGIN-DIALOG',
-                    `Failed to handle dialog: ${error instanceof Error ? error.message : String(error)}`,
-                    'error'
-                )
+                // Send Escape key to dismiss any native dialogs
+                await page.keyboard.press('Escape').catch(() => {
+                    // Silent failure - page might be closed
+                })
+            } catch {
+                // Silent failure - interval will be cleared when stopEscapeWatcher is called
             }
-        })
+        }, 500)
+    }
 
-        this.bot.log(this.bot.isMobile, 'LOGIN-DIALOG', 'Dialog handlers installed (auto-dismiss enabled)', 'log', 'cyan')
+    /**
+     * Stop the automatic Escape key sender
+     */
+    public stopEscapeWatcher() {
+        if (this.escapeWatcherInterval) {
+            clearInterval(this.escapeWatcherInterval)
+            this.escapeWatcherInterval = null
+            this.bot.log(this.bot.isMobile, 'LOGIN-ESCAPE', 'Stopped automatic Escape sender', 'log', 'cyan')
+        }
     }
 
     public async handlePasskeyPrompts(page: Page, context: 'main' | 'oauth') {
