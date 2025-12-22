@@ -4,13 +4,25 @@ import fs from 'fs'
 import { createServer } from 'http'
 import path from 'path'
 import { WebSocket, WebSocketServer } from 'ws'
-import { log as botLog } from '../util/notifications/Logger'
+import { logEventEmitter } from '../util/notifications/Logger'
 import { apiRouter } from './routes'
 import { DashboardLog, dashboardState } from './state'
 
-// Dashboard logging helper
+// Dashboard logging helper (uses events, NOT interception)
 const dashLog = (message: string, type: 'log' | 'warn' | 'error' = 'log'): void => {
-  botLog('main', 'DASHBOARD', message, type)
+  const logEntry: DashboardLog = {
+    timestamp: new Date().toISOString(),
+    level: type,
+    platform: 'MAIN',
+    title: 'DASHBOARD',
+    message
+  }
+
+  // Add to console
+  console.log(`[${logEntry.timestamp}] [${logEntry.platform}] [${logEntry.title}] ${message}`)
+
+  // Add to dashboard state
+  dashboardState.addLog(logEntry)
 }
 
 const PORT = process.env.DASHBOARD_PORT ? parseInt(process.env.DASHBOARD_PORT) : 3000
@@ -41,7 +53,7 @@ export class DashboardServer {
     this.setupMiddleware()
     this.setupRoutes()
     this.setupWebSocket()
-    this.interceptBotLogs()
+    this.setupLogEventListener() // FIXED: Use event listener instead of function interception
     this.setupStateListener()
   }
 
@@ -169,40 +181,18 @@ export class DashboardServer {
     }, 30000)
   }
 
-  private interceptBotLogs(): void {
-    // Intercept Logger.log calls by wrapping at module level
-    // This ensures all log calls go through dashboard state
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const loggerModule = require('../util/notifications/Logger') as { log: typeof botLog }
-    const originalLog = loggerModule.log
-
-    loggerModule.log = (
-      isMobile: boolean | 'main',
-      title: string,
-      message: string,
-      type: 'log' | 'warn' | 'error' = 'log',
-      color?: keyof typeof import('chalk')
-    ) => {
-      // Call original log function
-      const result = originalLog(isMobile, title, message, type, color as keyof typeof import('chalk'))
-
-      // Create log entry for dashboard
-      const logEntry: DashboardLog = {
-        timestamp: new Date().toISOString(),
-        level: type,
-        platform: isMobile === 'main' ? 'MAIN' : isMobile ? 'MOBILE' : 'DESKTOP',
-        title,
-        message
-      }
-
+  /**
+   * FIXED: Listen to log events instead of intercepting Logger.log function
+   * This prevents WebSocket disconnection issues and function interception conflicts
+   */
+  private setupLogEventListener(): void {
+    logEventEmitter.on('log', (logEntry: DashboardLog) => {
       // Add to dashboard state and broadcast
       dashboardState.addLog(logEntry)
       this.broadcastUpdate('log', { log: logEntry })
+    })
 
-      return result
-    }
-
-    dashLog('Bot log interception active')
+    dashLog('Log event listener active')
   }
 
   public broadcastUpdate(type: string, data: unknown): void {

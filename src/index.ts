@@ -225,7 +225,7 @@ export class MicrosoftRewardsBot {
 
     async run() {
         this.printBanner()
-        log('main', 'MAIN', `Bot started with ${this.config.clusters} clusters`)
+        log('main', 'MAIN', `Bot started with ${this.config.clusters} worker(s) (1 bot, ${this.config.clusters} parallel browser${this.config.clusters > 1 ? 's' : ''})`)
 
         // Only cluster when there's more than 1 cluster demanded
         if (this.config.clusters > 1) {
@@ -840,8 +840,8 @@ export class MicrosoftRewardsBot {
         const startTime = new Date(Date.now() - summaries.reduce((sum, s) => sum + s.durationMs, 0))
         const endTime = new Date()
 
-        // Use SummaryReporter for modern reporting
-        const reporter = new SummaryReporter(this.config)
+        // Use SummaryReporter for modern reporting (with account history tracking)
+        const reporter = new SummaryReporter(this.config, this.accounts)
         const summary = reporter.createSummary(accountResults, startTime, endTime)
 
         // Generate console output and send notifications (webhooks, ntfy, job state)

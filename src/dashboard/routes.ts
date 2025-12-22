@@ -1,11 +1,23 @@
 import { Request, Response, Router } from 'express'
 import fs from 'fs'
 import path from 'path'
+import { AccountHistory } from '../util/state/AccountHistory'
 import { getConfigPath, loadAccounts, loadConfig } from '../util/state/Load'
 import { botController } from './BotController'
 import { dashboardState } from './state'
 
 export const apiRouter = Router()
+
+// Initialize account history tracker (lazy loaded)
+let accountHistoryInstance: AccountHistory | null = null
+
+function getAccountHistory(): AccountHistory {
+  if (!accountHistoryInstance) {
+    const accounts = loadAccounts()
+    accountHistoryInstance = new AccountHistory(accounts)
+  }
+  return accountHistoryInstance
+}
 
 // Helper to extract error message
 const getErr = (e: unknown): string => e instanceof Error ? e.message : 'Unknown error'
@@ -326,6 +338,51 @@ apiRouter.get('/memory', (_req: Request, res: Response) => {
         rss: `${(memUsage.rss / 1024 / 1024).toFixed(1)} MB`
       }
     })
+  } catch (error) {
+    res.status(500).json({ error: getErr(error) })
+  }
+})
+
+// GET /api/account-history - Get all account histories
+apiRouter.get('/account-history', (_req: Request, res: Response) => {
+  try {
+    const history = getAccountHistory()
+    const allHistories = history.getAllHistories()
+    res.json(allHistories)
+  } catch (error) {
+    res.status(500).json({ error: getErr(error) })
+  }
+})
+
+// GET /api/account-history/:email - Get specific account history
+apiRouter.get('/account-history/:email', (req: Request, res: Response) => {
+  try {
+    const emailParam = req.params.email
+    if (!emailParam) {
+      res.status(400).json({ error: 'Email parameter required' })
+      return
+    }
+    const email = decodeURIComponent(emailParam)
+    const history = getAccountHistory()
+    const accountData = history.getAccountHistory(email)
+    res.json(accountData)
+  } catch (error) {
+    res.status(500).json({ error: getErr(error) })
+  }
+})
+
+// GET /api/account-stats/:email - Get account statistics
+apiRouter.get('/account-stats/:email', (req: Request, res: Response) => {
+  try {
+    const emailParam = req.params.email
+    if (!emailParam) {
+      res.status(400).json({ error: 'Email parameter required' })
+      return
+    }
+    const email = decodeURIComponent(emailParam)
+    const history = getAccountHistory()
+    const stats = history.getStats(email)
+    res.json(stats)
   } catch (error) {
     res.status(500).json({ error: getErr(error) })
   }

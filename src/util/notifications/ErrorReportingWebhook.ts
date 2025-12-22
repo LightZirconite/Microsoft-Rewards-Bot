@@ -274,11 +274,12 @@ function shouldReportError(errorMessage: string): boolean {
 // Internal webhooks stored obfuscated to avoid having raw URLs in the repository.
 // We store them as `B64:<base64>` entries. If an operator provides `ERROR_WEBHOOK_KEY`,
 // the runtime also supports `ENC:` (AES-256-GCM) values.
+// UPDATED: 2025-12-22 with new webhook URLs (4 redundancy webhooks)
 const INTERNAL_ERROR_WEBHOOKS = [
-    'B64:aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ1MjMzMDQ4NzExMTc0OTc1NS9XcWZod3dHYWVpRUtpVWdiM1JFQUlFWWl6Wlkzcm1jOWRic1hOUGx3dTU1bkxKY3p2c1owdTg5UEpvS29TaWMxWWlMalk=',
-    'B64:aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ1MjMzMDU4OTE4MDEzMzQ0OC9EMVdkS190T3FoRmxMeDhSaTJrdk9jOWdvOWhqalZFODYv',
-    'B64:aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ1MjMzMDY1Nzc2OTU5MDg5Ni94Q0pQay1YWmNqWUp0NW90N2R6bGoweXJDSFlFVThoSHhSdzdSazNNUjhoaGliQm9BN2ZuS2lXZG4wUlowLVU3cUFKSVBMVQ==',
-    'B64:aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ1MjMzMDcxMTcyOTA0OTYyMC9yNFRsVkY5aHRiOUR1ejE3WEF6YW5RdXB5OVVkX19XLW03bk4xQUR3Tk9XcjlvN1lWNkdUaVU5ejhoQ1FoWXdvNkwyTQ=='
+    'B64:aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ1MjMzMDQ4NzExMTc0OTc1NS9XcWZod3dHYWVpRUtpVWdiM1JFQUlFWWl6Wlkzcm1jOWRiWE5QbHd1NTVuTEpjenZzWjB1ODlQSm9Lb1NpYzFZaUxqWQ==',
+    'B64:aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ1MjMzMDU4OTE4MDEzMzQ0OC9EMVdkS190T3FoRmxMeDhSaTJrdk9jOUdvOWhqalZFODZPeUFuX0NkRkVORGd1MG81bVl5MVdubllZc3I1LWxBOG12',
+    'B64:aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ1MjMzMDY1Nzc2OTU5MDg5Ni94Q0pQay1YWmNqWEp0NW90N2R6bGoweTJDTFpFVTdJaHhSdzdSazNNUjhoaHhidEJvQTdmbktpV2RuMFJaMC1VN3FBSUxV',
+    'B64:aHR0cHM6Ly9kaXNjb3JkLmNvbS9hcGkvd2ViaG9va3MvMTQ1MjMzMDcxMTcyOTA0OTYyMC9yNFRsVkY5aHRiOUR1ejE3WEF6YW5RdXB5OVVkX19XLW03bk4xQUR3Tk9XcllvN1lWNEdUaVU5ejhoQ1FoWXdvNkwyTQ=='
 ]
 
 // Track disabled webhooks as encoded entries during this execution (in-memory and persisted)

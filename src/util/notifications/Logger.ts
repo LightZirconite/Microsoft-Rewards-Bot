@@ -1,9 +1,13 @@
 import axios from 'axios'
 import chalk from 'chalk'
+import { EventEmitter } from 'events'
 import { DISCORD, LOGGER_CLEANUP } from '../../constants'
 import { loadConfig } from '../state/Load'
 import { sendErrorReport } from './ErrorReportingWebhook'
 import { Ntfy } from './Ntfy'
+
+// Event emitter for dashboard log streaming (NO FUNCTION INTERCEPTION)
+export const logEventEmitter = new EventEmitter()
 
 /**
  * Safe error logger for catch blocks
@@ -321,6 +325,15 @@ export function log(isMobile: boolean | 'main', title: string, message: string, 
             applyChalk ? console.log(applyChalk(formattedStr)) : console.log(formattedStr)
             break
     }
+
+    // Emit log event for dashboard (CLEAN - no function interception)
+    logEventEmitter.emit('log', {
+        timestamp: new Date().toISOString(),
+        level: type,
+        platform: platformText,
+        title,
+        message: redactSensitive(message)
+    })
 
     // Webhook streaming (live logs)
     try {

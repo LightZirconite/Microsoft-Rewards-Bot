@@ -7,12 +7,15 @@
  * - Webhook notifications
  * - Ntfy push notifications
  * - Job state updates
+ * - Account history tracking (all-time stats)
  */
 
+import { Account } from '../interface/Account'
 import type { Config } from '../interface/Config'
 import { ConclusionWebhook } from '../util/notifications/ConclusionWebhook'
 import { log } from '../util/notifications/Logger'
 import { Ntfy } from '../util/notifications/Ntfy'
+import { AccountHistory, AccountHistoryEntry } from '../util/state/AccountHistory'
 import { getActivityStatsTracker, resetActivityStatsTracker } from '../util/state/ActivityStatsTracker'
 import { JobState } from '../util/state/JobState'
 
@@ -40,12 +43,14 @@ export interface SummaryData {
 export class SummaryReporter {
     private config: Config
     private jobState?: JobState
+    private accountHistory: AccountHistory
 
-    constructor(config: Config) {
+    constructor(config: Config, accounts: Account[]) {
         this.config = config
         if (config.jobState?.enabled !== false) {
             this.jobState = new JobState(config)
         }
+        this.accountHistory = new AccountHistory(accounts)
     }
 
     /**
@@ -262,6 +267,9 @@ export class SummaryReporter {
         // Log activity statistics
         this.logActivityStats()
 
+        // Save to account history (all-time tracking)
+        this.saveToHistory(summary)
+
         // Send notifications
         await Promise.all([
             this.sendWebhookSummary(summary),
@@ -271,6 +279,54 @@ export class SummaryReporter {
 
         // Reset activity stats for next run
         resetActivityStatsTracker()
+    }
+
+    /**
+     * Save account results to history for all-time tracking
+     */
+    private saveToHistory(summary: SummaryData): void {
+        try {
+            const today = new Date().toISOString().slice(0, 10)
+
+            for (const account of summary.accounts) {
+                // Get activity stats for this account
+                const tracker = getActivityStatsTracker()
+                const completedActivities: string[] = []
+                const failedActivities: string[] = []
+
+                // Extract activity completion status from tracker
+                tracker.getSummary().byActivity.forEach(activity => {
+                    if (activity.successes > 0) {
+                        completedActivities.push(activity.type)
+                    }
+                    if (activity.failures > 0) {
+                        failedActivities.push(activity.type)
+                    }
+                })
+
+                const entry: AccountHistoryEntry = {
+                    timestamp: new Date().toISOString(),
+                    date: today,
+                    desktopPoints: account.desktopPoints,
+                    mobilePoints: account.mobilePoints,
+                    totalPoints: account.pointsEarned,
+                    availablePoints: account.finalPoints,
+                    lifetimePoints: account.finalPoints, // Approximation
+                    dailyGoalProgress: 0, // Could extract from dashboard data
+                    completedActivities,
+                    failedActivities,
+                    errors: account.errors || [],
+                    duration: account.runDuration,
+                    success: !this.hasAccountFailure(account)
+                }
+
+                this.accountHistory.addEntry(account.email, entry)
+            }
+
+            log('main', 'SUMMARY', `✓ Saved history for ${summary.accounts.length} account(s)`)
+        } catch (error) {
+            log('main', 'SUMMARY', `Failed to save account history: ${error instanceof Error ? error.message : String(error)}`, 'error')
+        }
     }
 
     /**

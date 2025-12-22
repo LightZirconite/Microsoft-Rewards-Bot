@@ -37,7 +37,7 @@ const DEFAULT_TIMEOUTS = {
     long: 1500,
     veryLong: 2000,
     extraLong: 3000,
-    oauthMaxMs: 180000,
+    oauthMaxMs: 300000, // INCREASED: 5 minutes for OAuth (mobile auth is often slow)
     portalWaitMs: 15000,
     elementCheck: 100,
     fastPoll: 500,
@@ -124,9 +124,9 @@ export class Login {
         const isLinux = process.platform === 'linux'
         const isWindows = process.platform === 'win32'
         // CRITICAL FIX: Windows needs 90s timeout to avoid "Target page, context or browser has been closed"
-        const navigationTimeout = isWindows ? DEFAULT_TIMEOUTS.navigationTimeoutWindows : 
-                                  isLinux ? DEFAULT_TIMEOUTS.navigationTimeoutLinux : 
-                                  DEFAULT_TIMEOUTS.navigationTimeout
+        const navigationTimeout = isWindows ? DEFAULT_TIMEOUTS.navigationTimeoutWindows :
+            isLinux ? DEFAULT_TIMEOUTS.navigationTimeoutLinux :
+                DEFAULT_TIMEOUTS.navigationTimeout
 
         let navigationSucceeded = false
         let recoveryUsed = false
@@ -346,7 +346,7 @@ export class Login {
             const elapsed = Math.round((Date.now() - start) / 1000)
             const currentUrl = page.url()
             this.bot.log(this.bot.isMobile, 'LOGIN-APP', `OAuth code not received after ${elapsed}s. Current URL: ${currentUrl}`, 'error')
-            throw new Error(`OAuth code not received within ${DEFAULT_TIMEOUTS.oauthMaxMs / 1000}s`)
+            throw new Error(`OAuth code not received within ${DEFAULT_TIMEOUTS.oauthMaxMs / 1000}s (mobile auth can be slow, check manual login)`)
         }
 
         this.bot.log(this.bot.isMobile, 'LOGIN-APP', `OAuth code received in ${Math.round((Date.now() - start) / 1000)}s`)
