@@ -997,7 +997,7 @@ async function main(): Promise<void> {
     }
 
     // Check for dashboard mode flag (standalone dashboard)
-    if (process.argv.includes('-dashboard')) {
+    if (cluster.isPrimary && process.argv.includes('-dashboard')) {
         const { startDashboardServer } = await import('./dashboard/server')
         const { dashboardState } = await import('./dashboard/state')
         log('main', 'DASHBOARD', 'Starting standalone dashboard server...')
@@ -1024,7 +1024,7 @@ async function main(): Promise<void> {
     let scheduler: InternalScheduler | null = null
 
     // Auto-start dashboard if enabled in config
-    if (config.dashboard?.enabled) {
+    if (cluster.isPrimary && config.dashboard?.enabled) {
         const { DashboardServer } = await import('./dashboard/server')
         const { dashboardState } = await import('./dashboard/state')
         const port = config.dashboard.port || 3000
