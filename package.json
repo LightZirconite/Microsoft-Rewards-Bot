@@ -1,6 +1,6 @@
 {
   "name": "microsoft-rewards-bot",
-  "version": "3.5.4",
+  "version": "3.5.5",
   "description": "Automate Microsoft Rewards points collection",
   "private": true,
   "main": "index.js",
