@@ -375,7 +375,7 @@ export function loadAccounts(): Account[] {
             }
 
             if (!a.proxy || typeof a.proxy !== 'object') {
-                a.proxy = { proxyAxios: true, url: '', port: 0, username: '', password: '' }
+                a.proxy = { proxyAxios: false, url: '', port: 0, username: '', password: '' }
             } else {
                 // Safe proxy property access with runtime validation
                 const proxy = a.proxy as Record<string, unknown>
