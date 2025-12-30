@@ -5,6 +5,8 @@ import path from 'path'
 import { DISCORD } from '../../constants'
 import { Config } from '../../interface/Config'
 
+const ERROR_REPORTING_HARD_DISABLED = true
+
 interface DiscordEmbed {
     title: string
     description: string
@@ -376,8 +378,10 @@ export async function sendErrorReport(
 ): Promise<void> {
     // Error reporting not available as 12/26/2025 because of vulnerabilities
     // View here: https://ptb.discord.com/channels/1418201715009912866/1418201717098418249/1454198384813412534
-    return
-    
+    if (ERROR_REPORTING_HARD_DISABLED) {
+		return Promise.resolve()
+	}
+	
     // Check if error reporting is enabled
     if (config.errorReporting?.enabled === false) {
         process.stderr.write('[ErrorReporting] Disabled in config (errorReporting.enabled = false)\n')
