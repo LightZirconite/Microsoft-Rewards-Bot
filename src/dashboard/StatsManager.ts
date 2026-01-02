@@ -256,6 +256,68 @@ export class StatsManager {
             console.error('[STATS] Failed to prune old stats:', error)
         }
     }
+
+    /**
+     * Get historical stats for charts (last N days)
+     */
+    getHistoricalStats(days: number = 30): Record<string, number> {
+        const result: Record<string, number> = {}
+        const today = new Date()
+
+        for (let i = 0; i < days; i++) {
+            const date = new Date(today)
+            date.setDate(date.getDate() - i)
+            const dateStr = date.toISOString().slice(0, 10)
+
+            const stats = this.loadDailyStats(dateStr)
+            result[dateStr] = stats?.totalPoints || 0
+        }
+
+        return result
+    }
+
+    /**
+     * Get activity breakdown for last N days
+     */
+    getActivityBreakdown(days: number = 7): Record<string, number> {
+        const breakdown: Record<string, number> = {
+            'Desktop Search': 0,
+            'Mobile Search': 0,
+            'Daily Set': 0,
+            'Quizzes': 0,
+            'Punch Cards': 0,
+            'Other': 0
+        }
+
+        const today = new Date()
+        for (let i = 0; i < days; i++) {
+            const date = new Date(today)
+            date.setDate(date.getDate() - i)
+            const dateStr = date.toISOString().slice(0, 10)
+
+            const accountStats = this.getAccountStatsForDate(dateStr)
+
+            for (const account of accountStats) {
+                if (!account.desktopSearches) account.desktopSearches = 0
+                if (!account.mobileSearches) account.mobileSearches = 0
+                if (!account.activitiesCompleted) account.activitiesCompleted = 0
+
+                breakdown['Desktop Search']! += account.desktopSearches
+                breakdown['Mobile Search']! += account.mobileSearches
+                breakdown['Daily Set']! += Math.min(1, account.activitiesCompleted)
+                breakdown['Other']! += Math.max(0, account.activitiesCompleted - 3)
+            }
+        }
+
+        return breakdown
+    }
+
+    /**
+     * Get global stats
+     */
+    getGlobalStats(): GlobalStats {
+        return this.loadGlobalStats()
+    }
 }
 
 // Singleton instance

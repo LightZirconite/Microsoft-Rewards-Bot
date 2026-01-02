@@ -173,9 +173,9 @@ apiRouter.post('/start', async (_req: Request, res: Response): Promise<void> => 
 })
 
 // POST /api/stop - Stop bot
-apiRouter.post('/stop', (_req: Request, res: Response): void => {
+apiRouter.post('/stop', async (_req: Request, res: Response): Promise<void> => {
   try {
-    const result = botController.stop()
+    const result = await botController.stop()
 
     if (result.success) {
       sendSuccess(res, { message: 'Bot stopped successfully' })
@@ -479,6 +479,38 @@ apiRouter.get('/account-stats/:email', (req: Request, res: Response) => {
     const history = getAccountHistory()
     const stats = history.getStats(email)
     res.json(stats)
+  } catch (error) {
+    res.status(500).json({ error: getErr(error) })
+  }
+})
+
+// GET /api/stats/historical - Get historical point data
+apiRouter.get('/stats/historical', (req: Request, res: Response) => {
+  try {
+    const days = parseInt(req.query.days as string) || 30
+    const historical = statsManager.getHistoricalStats(days)
+    res.json(historical)
+  } catch (error) {
+    res.status(500).json({ error: getErr(error) })
+  }
+})
+
+// GET /api/stats/activity-breakdown - Get activity breakdown
+apiRouter.get('/stats/activity-breakdown', (req: Request, res: Response) => {
+  try {
+    const days = parseInt(req.query.days as string) || 7
+    const breakdown = statsManager.getActivityBreakdown(days)
+    res.json(breakdown)
+  } catch (error) {
+    res.status(500).json({ error: getErr(error) })
+  }
+})
+
+// GET /api/stats/global - Get global statistics
+apiRouter.get('/stats/global', (_req: Request, res: Response) => {
+  try {
+    const global = statsManager.getGlobalStats()
+    res.json(global)
   } catch (error) {
     res.status(500).json({ error: getErr(error) })
   }

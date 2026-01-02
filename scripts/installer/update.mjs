@@ -264,85 +264,208 @@ function getUpdateMode(configData) {
 // =============================================================================
 
 /**
- * Check if update is available by comparing versions
- * Uses GitHub API directly (no CDN cache issues, always fresh data)
- * Rate limit: 60 requests/hour (sufficient for bot updates)
+ * Download a file from GitHub raw URL
  */
-async function checkVersion() {
-  try {
-    // Read local version
-    const localPkgPath = join(process.cwd(), 'package.json')
-    if (!existsSync(localPkgPath)) {
-      console.log('⚠️  Could not find local package.json')
-      return { updateAvailable: false, localVersion: 'unknown', remoteVersion: 'unknown' }
-    }
+async function downloadFromGitHub(url, dest) {
+  console.log(`📥 Downloading: ${url}`)
 
-    const localPkg = JSON.parse(readFileSync(localPkgPath, 'utf8'))
-    const localVersion = localPkg.version
+  return new Promise((resolve, reject) => {
+    const file = createWriteStream(dest)
 
-    // Fetch remote version from GitHub API (no cache)
-    const repoOwner = 'LightZirconite'
-    const repoName = 'Microsoft-Rewards-Bot'
-    const branch = 'main'
-
-    console.log('🔍 Checking for updates...')
-    console.log(`   Local:  ${localVersion}`)
-
-    // Use GitHub API directly - no CDN cache, always fresh
-    const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/package.json?ref=${branch}`
-
-    return new Promise((resolve) => {
-      const options = {
-        headers: {
-          'User-Agent': 'Microsoft-Rewards-Bot-Updater',
-          'Accept': 'application/vnd.github.v3.raw',  // Returns raw file content
-          'Cache-Control': 'no-cache'
-        }
+    httpsGet(url, {
+      headers: {
+        'User-Agent': 'Microsoft-Rewards-Bot-Updater',
+        'Cache-Control': 'no-cache'
+      }
+    }, (response) => {
+      // Handle redirects
+      if (response.statusCode === 302 || response.statusCode === 301) {
+        file.close()
+        rmSync(dest, { force: true })
+        downloadFromGitHub(response.headers.location, dest).then(resolve).catch(reject)
+        return
       }
 
-      const request = httpsGet(apiUrl, options, (res) => {
-        if (res.statusCode !== 200) {
-          console.log(`   ⚠️  GitHub API returned HTTP ${res.statusCode}`)
-          if (res.statusCode === 403) {
-            console.log('   ℹ️  Rate limit may be exceeded (60/hour). Try again later.')
-          }
-          resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
-          return
-        }
+      if (response.statusCode !== 200) {
+        file.close()
+        rmSync(dest, { force: true })
+        reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`))
+        return
+      }
 
-        let data = ''
-        res.on('data', chunk => data += chunk)
-        res.on('end', () => {
-          try {
-            const remotePkg = JSON.parse(data)
-            const remoteVersion = remotePkg.version
-            console.log(`   Remote: ${remoteVersion}`)
-
-            // Any difference triggers update (upgrade or downgrade)
-            const updateAvailable = localVersion !== remoteVersion
-            resolve({ updateAvailable, localVersion, remoteVersion })
-          } catch (err) {
-            console.log(`   ⚠️  Could not parse remote package.json: ${err.message}`)
-            resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
-          }
-        })
+      response.pipe(file)
+      file.on('finish', () => {
+        file.close()
+        resolve()
       })
-
-      request.on('error', (err) => {
-        console.log(`   ⚠️  Network error: ${err.message}`)
-        resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
-      })
-
-      request.setTimeout(10000, () => {
-        request.destroy()
-        console.log('   ⚠️  Request timeout (10s)')
-        resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
-      })
+    }).on('error', (err) => {
+      file.close()
+      rmSync(dest, { force: true })
+      reject(err)
     })
-  } catch (err) {
-    console.log(`⚠️  Version check failed: ${err.message}`)
+  })
+}
+
+/**
+ * Smart update for config/accounts example files
+ * Only updates if GitHub version has changed AND local user file matches old example
+ */
+async function smartUpdateExampleFiles(configData) {
+  const files = []
+
+  // Check which files to update based on config
+  if (configData?.update?.autoUpdateConfig === true) {
+    files.push({
+      example: 'src/config.example.jsonc',
+      target: 'src/config.jsonc',
+      name: 'Configuration',
+      githubUrl: 'https://raw.githubusercontent.com/LightZirconite/Microsoft-Rewards-Bot/refs/heads/main/src/config.example.jsonc'
+    })
+  }
+
+  if (configData?.update?.autoUpdateAccounts === true) {
+    files.push({
+      example: 'src/accounts.example.jsonc',
+      target: 'src/accounts.jsonc',
+      name: 'Accounts',
+      githubUrl: 'https://raw.githubusercontent.com/LightZirconite/Microsoft-Rewards-Bot/refs/heads/main/src/accounts.example.jsonc'
+    })
+  }
+
+  if (files.length === 0) {
+    return // Nothing to update
+  }
+
+  console.log('\n🔧 Checking for example file updates...')
+
+  for (const file of files) {
+    try {
+      const examplePath = join(process.cwd(), file.example)
+      const targetPath = join(process.cwd(), file.target)
+      const tempPath = join(process.cwd(), `.update-${file.example.split('/').pop()}`)
+
+      // Download latest version from GitHub
+      await downloadFromGitHub(file.githubUrl, tempPath)
+
+      // Read all versions
+      const githubContent = readFileSync(tempPath, 'utf8')
+      const localExampleContent = existsSync(examplePath) ? readFileSync(examplePath, 'utf8') : ''
+      const userContent = existsSync(targetPath) ? readFileSync(targetPath, 'utf8') : ''
+
+      // Check if GitHub version is different from local example
+      if (githubContent === localExampleContent) {
+        console.log(`✓ ${file.name}: No changes detected`)
+        rmSync(tempPath, { force: true })
+        continue
+      }
+
+      // GitHub version is different - check if user has modified their file
+      if (userContent === localExampleContent) {
+        // User hasn't modified their file - safe to update
+        console.log(`📝 ${file.name}: Updating to latest version...`)
+
+        // Update example file
+        writeFileSync(examplePath, githubContent)
+
+        // Update user file (since they haven't customized it)
+        writeFileSync(targetPath, githubContent)
+
+        console.log(`✅ ${file.name}: Updated successfully`)
+      } else {
+        // User has customized their file - DO NOT overwrite
+        console.log(`⚠️  ${file.name}: User has custom changes, skipping auto-update`)
+        console.log(`   → Update available in: ${file.example}`)
+        console.log(`   → To disable this check: set "update.autoUpdate${file.name === 'Configuration' ? 'Config' : 'Accounts'}" to false`)
+
+        // Still update the example file for reference
+        writeFileSync(examplePath, githubContent)
+      }
+
+      // Clean up temp file
+      rmSync(tempPath, { force: true })
+
+    } catch (error) {
+      console.error(`❌ Failed to update ${file.name}: ${error.message}`)
+      // Continue with other files
+    }
+  }
+
+  console.log('')
+}
+try {
+  // Read local version
+  const localPkgPath = join(process.cwd(), 'package.json')
+  if (!existsSync(localPkgPath)) {
+    console.log('⚠️  Could not find local package.json')
     return { updateAvailable: false, localVersion: 'unknown', remoteVersion: 'unknown' }
   }
+
+  const localPkg = JSON.parse(readFileSync(localPkgPath, 'utf8'))
+  const localVersion = localPkg.version
+
+  // Fetch remote version from GitHub API (no cache)
+  const repoOwner = 'LightZirconite'
+  const repoName = 'Microsoft-Rewards-Bot'
+  const branch = 'main'
+
+  console.log('🔍 Checking for updates...')
+  console.log(`   Local:  ${localVersion}`)
+
+  // Use GitHub API directly - no CDN cache, always fresh
+  const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/package.json?ref=${branch}`
+
+  return new Promise((resolve) => {
+    const options = {
+      headers: {
+        'User-Agent': 'Microsoft-Rewards-Bot-Updater',
+        'Accept': 'application/vnd.github.v3.raw',  // Returns raw file content
+        'Cache-Control': 'no-cache'
+      }
+    }
+
+    const request = httpsGet(apiUrl, options, (res) => {
+      if (res.statusCode !== 200) {
+        console.log(`   ⚠️  GitHub API returned HTTP ${res.statusCode}`)
+        if (res.statusCode === 403) {
+          console.log('   ℹ️  Rate limit may be exceeded (60/hour). Try again later.')
+        }
+        resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
+        return
+      }
+
+      let data = ''
+      res.on('data', chunk => data += chunk)
+      res.on('end', () => {
+        try {
+          const remotePkg = JSON.parse(data)
+          const remoteVersion = remotePkg.version
+          console.log(`   Remote: ${remoteVersion}`)
+
+          // Any difference triggers update (upgrade or downgrade)
+          const updateAvailable = localVersion !== remoteVersion
+          resolve({ updateAvailable, localVersion, remoteVersion })
+        } catch (err) {
+          console.log(`   ⚠️  Could not parse remote package.json: ${err.message}`)
+          resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
+        }
+      })
+    })
+
+    request.on('error', (err) => {
+      console.log(`   ⚠️  Network error: ${err.message}`)
+      resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
+    })
+
+    request.setTimeout(10000, () => {
+      request.destroy()
+      console.log('   ⚠️  Request timeout (10s)')
+      resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
+    })
+  })
+} catch (err) {
+  console.log(`⚠️  Version check failed: ${err.message}`)
+  return { updateAvailable: false, localVersion: 'unknown', remoteVersion: 'unknown' }
+}
 }
 
 /**
@@ -614,6 +737,9 @@ async function performUpdate() {
   }
 
   process.stdout.write(' ✓\n')
+
+  // Step 10.5: Smart update example files (config/accounts) if enabled
+  await smartUpdateExampleFiles(configData)
 
   // Step 11: Verify integrity (check if critical files exist AND were recently updated)
   process.stdout.write('🔍 Verifying integrity...')

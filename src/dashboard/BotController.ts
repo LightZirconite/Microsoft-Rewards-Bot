@@ -7,6 +7,8 @@ export class BotController {
   private botInstance: MicrosoftRewardsBot | null = null
   private startTime?: Date
   private isStarting: boolean = false // Race condition protection
+  private stopRequested: boolean = false // Stop signal flag
+  private botProcess: Promise<void> | null = null // Track bot execution
 
   constructor() {
     process.on('exit', () => this.stop())
@@ -46,21 +48,34 @@ export class BotController {
       dashboardState.setBotInstance(this.botInstance)
 
       // Run bot asynchronously - don't block the API response
-      void (async () => {
+      this.botProcess = (async () => {
         try {
           this.log('✓ Bot initialized, starting execution...', 'log')
 
           await this.botInstance!.initialize()
+
+          // Check for stop signal before running
+          if (this.stopRequested) {
+            this.log('⚠ Stop requested before execution - aborting', 'warn')
+            return
+          }
+
           await this.botInstance!.run()
 
           this.log('✓ Bot completed successfully', 'log')
         } catch (error) {
-          this.log(`Bot error: ${getErrorMessage(error)}`, 'error')
+          // Check if error was due to stop signal
+          if (this.stopRequested) {
+            this.log('⚠ Bot stopped by user request', 'warn')
+          } else {
+            this.log(`Bot error: ${getErrorMessage(error)}`, 'error')
+          }
         } finally {
           this.cleanup()
         }
       })()
 
+      // Don't await - return immediately to unblock API
       return { success: true, pid: process.pid }
 
     } catch (error) {
@@ -73,20 +88,30 @@ export class BotController {
     }
   }
 
-  public stop(): { success: boolean; error?: string } {
+  public async stop(): Promise<{ success: boolean; error?: string }> {
     if (!this.botInstance) {
       return { success: false, error: 'Bot is not running' }
     }
 
     try {
       this.log('🛑 Stopping bot...', 'warn')
-      this.log('⚠ Note: Bot will complete current task before stopping', 'warn')
+      this.log('⚠ Bot will complete current task before stopping', 'warn')
+
+      // Set stop flag
+      this.stopRequested = true
+
+      // Wait for bot process to finish (with timeout)
+      if (this.botProcess) {
+        const timeout = new Promise((resolve) => setTimeout(resolve, 10000)) // 10s timeout
+        await Promise.race([this.botProcess, timeout])
+      }
 
       this.cleanup()
+      this.log('✓ Bot stopped successfully', 'log')
       return { success: true }
 
     } catch (error) {
-      const errorMsg = getErrorMessage(error)
+      const errorMsg = await getErrorMessage(error)
       this.log(`Error stopping bot: ${errorMsg}`, 'error')
       this.cleanup()
       return { success: false, error: errorMsg }
@@ -96,7 +121,7 @@ export class BotController {
   public async restart(): Promise<{ success: boolean; error?: string; pid?: number }> {
     this.log('🔄 Restarting bot...', 'log')
 
-    const stopResult = this.stop()
+    const stopResult = await this.stop()
     if (!stopResult.success && stopResult.error !== 'Bot is not running') {
       return { success: false, error: `Failed to stop: ${stopResult.error}` }
     }
@@ -143,14 +168,21 @@ export class BotController {
       dashboardState.updateAccount(email, { status: 'running', errors: [] })
 
       // Run bot asynchronously with single account
-      void (async () => {
+      this.botProcess = (async () => {
         try {
           this.log(`✓ Bot initialized for ${email}, starting execution...`, 'log')
 
           await this.botInstance!.initialize()
 
-            // Override accounts to run only this one
-            ; (this.botInstance as any).accounts = [targetAccount]
+          // Check for stop signal
+          if (this.stopRequested) {
+            this.log(`⚠ Stop requested for ${email} - aborting`, 'warn')
+            dashboardState.updateAccount(email, { status: 'idle' })
+            return
+          }
+
+          // Override accounts to run only this one
+          ; (this.botInstance as any).accounts = [targetAccount]
 
           await this.botInstance!.run()
 
@@ -158,11 +190,16 @@ export class BotController {
           dashboardState.updateAccount(email, { status: 'completed' })
         } catch (error) {
           const errMsg = error instanceof Error ? error.message : String(error)
-          this.log(`Bot error for ${email}: ${errMsg}`, 'error')
-          dashboardState.updateAccount(email, {
-            status: 'error',
-            errors: [errMsg]
-          })
+          if (this.stopRequested) {
+            this.log(`⚠ Bot stopped for ${email} by user request`, 'warn')
+            dashboardState.updateAccount(email, { status: 'idle' })
+          } else {
+            this.log(`Bot error for ${email}: ${errMsg}`, 'error')
+            dashboardState.updateAccount(email, {
+              status: 'error',
+              errors: [errMsg]
+            })
+          }
         } finally {
           this.cleanup()
         }
@@ -202,6 +239,8 @@ export class BotController {
   private cleanup(): void {
     this.botInstance = null
     this.startTime = undefined
+    this.stopRequested = false
+    this.botProcess = null
     dashboardState.setRunning(false)
     dashboardState.setBotInstance(undefined)
   }

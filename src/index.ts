@@ -33,6 +33,7 @@ import { InternalScheduler } from './scheduler/InternalScheduler'
 
 import { DISCORD, TIMEOUTS } from './constants'
 import { Account } from './interface/Account'
+import { FileBootstrap } from './util/core/FileBootstrap'
 
 
 // Main bot class
@@ -1137,6 +1138,21 @@ async function main(): Promise<void> {
 
     const bootstrap = async () => {
         try {
+            // STEP 1: Bootstrap configuration files (copy .example.jsonc if needed)
+            log('main', 'BOOTSTRAP', 'Checking configuration files...', 'log', 'cyan')
+            const createdFiles = FileBootstrap.bootstrap()
+
+            if (createdFiles.length > 0) {
+                FileBootstrap.displayStartupMessage(createdFiles)
+
+                // If accounts file was just created, it will be empty
+                // User needs to configure before running
+                if (createdFiles.includes('Accounts')) {
+                    log('main', 'BOOTSTRAP', 'Please configure your accounts in src/accounts.jsonc before running the bot.', 'warn', 'yellow')
+                    process.exit(0)
+                }
+            }
+
             // Check for updates BEFORE initializing and running tasks
             const updateMarkerPath = path.join(process.cwd(), '.update-happened')
             const isDocker = isDockerEnvironment()

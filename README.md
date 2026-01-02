@@ -25,13 +25,17 @@
 git clone https://github.com/LightZirconite/Microsoft-Rewards-Bot.git
 cd Microsoft-Rewards-Bot
 
-# 2. Setup accounts
-cp src/accounts.example.jsonc src/accounts.jsonc
+# 2. Run the bot (auto-creates config files on first run)
+npm start
+
+# 3. Configure your accounts
 # Edit src/accounts.jsonc with your Microsoft account(s)
 
-# 3. Run
+# 4. Run again
 npm start
 ```
+
+**Note:** Configuration files (`config.jsonc` and `accounts.jsonc`) are automatically created from `.example.jsonc` templates on first run.
 
 ## Features
 

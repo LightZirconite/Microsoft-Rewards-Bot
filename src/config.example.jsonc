@@ -147,8 +147,8 @@
         "enabled": true, // Enable automatic update checks
         "method": "github-api", // Update method (github-api = recommended)
         "dockerMode": "auto", // Docker detection ("auto", "force-docker", "force-host")
-        "autoUpdateConfig": false, // Automatically update config.jsonc (NOT RECOMMENDED - use config.example.jsonc)
-        "autoUpdateAccounts": false // Automatically update accounts.jsonc (NEVER enable - prevents data loss)
+        "autoUpdateConfig": true, // Automatically update config.jsonc
+        "autoUpdateAccounts": false // Automatically update accounts.jsonc
     },
     // === ERROR REPORTING ===
     // Help improve the project by automatically reporting errors
