@@ -1,1 +1,10 @@
-{}
+{
+  "buildCommand": "exit 0",
+  "installCommand": "npm install --production",
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs20.x",
+      "maxDuration": 10
+    }
+  }
+}
