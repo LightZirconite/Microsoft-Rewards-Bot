@@ -63,4 +63,79 @@ export class SecurityDetector {
             throw new Error('Account locked by Microsoft - please review account status')
         }
     }
+
+    /**
+     * Check if account is suspended/banned and disable it in accounts.jsonc
+     * @param page Playwright page
+     * @returns True if account is suspended
+     */
+    public async checkAccountSuspended(page: Page): Promise<boolean> {
+        try {
+            // Check for suspension page elements
+            const suspendedSelectors = [
+                '#rewards-user-suspended-error',
+                '#fraudErrorBody',
+                '#suspendedAccountHeader'
+            ]
+
+            for (const selector of suspendedSelectors) {
+                const element = await page.waitForSelector(selector, { timeout: 800 }).catch(() => null)
+                if (element) {
+                    const email = this.bot.currentAccountEmail || 'unknown'
+                    this.bot.log(this.bot.isMobile, 'ACCOUNT-SUSPENDED', `⛔ Account ${email} has been SUSPENDED by Microsoft`, 'error')
+
+                    // Get suspension details from page
+                    const headerText = await page.locator('#suspendedAccountHeader').textContent().catch(() => '')
+                    const summaryText = await page.locator('#fraudSummary').textContent().catch(() => '')
+
+                    // Log detailed information
+                    if (headerText) {
+                        this.bot.log(this.bot.isMobile, 'ACCOUNT-SUSPENDED', `Header: ${headerText.trim()}`, 'error')
+                    }
+                    if (summaryText) {
+                        this.bot.log(this.bot.isMobile, 'ACCOUNT-SUSPENDED', `Summary: ${summaryText.trim().substring(0, 200)}...`, 'error')
+                    }
+
+                    // Disable account in accounts.jsonc
+                    try {
+                        const { disableBannedAccount } = await import('../../util/state/AccountDisabler')
+                        await disableBannedAccount(email, 'Account suspended by Microsoft Rewards')
+                        this.bot.log(this.bot.isMobile, 'ACCOUNT-SUSPENDED', `✓ Account ${email} disabled in accounts.jsonc`, 'warn')
+                    } catch (disableError) {
+                        this.bot.log(this.bot.isMobile, 'ACCOUNT-SUSPENDED', `Failed to disable account in config: ${disableError}`, 'error')
+                    }
+
+                    // Send incident alert
+                    const incident: SecurityIncident = {
+                        kind: 'Account Suspended',
+                        account: email,
+                        details: [
+                            headerText?.trim() || 'Account suspended',
+                            summaryText?.trim().substring(0, 300) || 'Microsoft Rewards violations detected'
+                        ],
+                        next: [
+                            'Account has been automatically disabled in accounts.jsonc',
+                            'Review suspension details at https://rewards.bing.com',
+                            'Contact Microsoft Support if you believe this is an error'
+                        ],
+                        docsUrl: 'https://support.microsoft.com/topic/c5ab735d-c6d9-4bb9-30ad-d828e954b6a9'
+                    }
+                    await this.securityUtils.sendIncidentAlert(incident, 'critical')
+
+                    // Engage global standby
+                    this.bot.compromisedModeActive = true
+                    this.bot.compromisedReason = 'account-suspended'
+                    this.securityUtils.startCompromisedInterval()
+                    await this.bot.engageGlobalStandby('account-suspended', email).catch(logError('LOGIN-SECURITY', 'Global standby engagement failed', this.bot.isMobile))
+
+                    return true
+                }
+            }
+
+            return false
+        } catch (error) {
+            this.bot.log(this.bot.isMobile, 'ACCOUNT-SUSPENDED', `Check failed: ${error}`, 'warn')
+            return false
+        }
+    }
 }

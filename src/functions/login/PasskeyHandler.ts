@@ -14,7 +14,12 @@ export class PasskeyHandler {
         passkeyPrimary: 'button[data-testid="primaryButton"]',
         passkeyTitle: '[data-testid="title"]',
         kmsiVideo: '[data-testid="kmsiVideo"]',
-        biometricVideo: '[data-testid="biometricVideo"]'
+        biometricVideo: '[data-testid="biometricVideo"]',
+        // QR Code Passkey dialog specific selectors
+        qrCodeDialog: 'div[role="dialog"]',
+        qrCodeImage: 'img[alt*="QR"], canvas[aria-label*="QR"], div[class*="qr"]',
+        backButton: 'button:has-text("Back")',
+        cancelButton: 'button:has-text("Cancel")'
     } as const
 
     constructor(bot: MicrosoftRewardsBot) {
@@ -36,6 +41,13 @@ export class PasskeyHandler {
 
     public async handlePasskeyPrompts(page: Page, context: 'main' | 'oauth') {
         let did = false
+
+        // Priority 0: Handle QR Code Passkey dialog (appears after TOTP)
+        const qrCodeHandled = await this.handleQrCodePasskeyDialog(page)
+        if (qrCodeHandled) {
+            did = true
+            this.logPasskeyOnce('QR code passkey dialog')
+        }
 
         // Early exit for passkey creation flows (common on mobile): hit cancel/skip if present
         const currentUrl = page.url()
@@ -233,5 +245,90 @@ export class PasskeyHandler {
         if (this.passkeyHandled) return
         this.passkeyHandled = true
         this.bot.log(this.bot.isMobile, 'LOGIN-PASSKEY', `Dismissed passkey prompt (${reason})`)
+    }
+
+    /**
+     * Handle QR Code Passkey dialog that appears after TOTP authentication
+     * This dialog is a modal that blocks interaction with the page
+     */
+    private async handleQrCodePasskeyDialog(page: Page): Promise<boolean> {
+        try {
+            // Method 1: Check for specific text content indicating QR code dialog
+            const qrCodeTextVisible = await page.locator('text=/use your phone or tablet|scan this QR code|passkeys/i')
+                .first()
+                .isVisible({ timeout: 800 })
+                .catch(() => false)
+
+            if (!qrCodeTextVisible) return false
+
+            this.bot.log(this.bot.isMobile, 'LOGIN-PASSKEY', 'Detected QR code passkey dialog, attempting dismissal')
+
+            // Method 2: Try keyboard ESC first (works for many dialogs)
+            await page.keyboard.press('Escape').catch(() => { })
+            await this.bot.utils.wait(300)
+
+            // Method 3: Check if dialog still visible after ESC
+            const stillVisible = await page.locator('text=/use your phone or tablet|scan this QR code/i')
+                .first()
+                .isVisible({ timeout: 500 })
+                .catch(() => false)
+
+            if (!stillVisible) {
+                this.bot.log(this.bot.isMobile, 'LOGIN-PASSKEY', 'QR code dialog dismissed via ESC')
+                return true
+            }
+
+            // Method 4: Try clicking Back or Cancel buttons
+            const dismissed = await this.clickFirstVisible(page, [
+                PasskeyHandler.SELECTORS.backButton,
+                PasskeyHandler.SELECTORS.cancelButton,
+                'button:has-text("Retour")', // French
+                'button:has-text("Annuler")', // French
+                'button:has-text("No thanks")',
+                'button:has-text("Maybe later")',
+                '[data-testid="secondaryButton"]',
+                'button[class*="secondary"]'
+            ], 500)
+
+            if (dismissed) {
+                this.bot.log(this.bot.isMobile, 'LOGIN-PASSKEY', 'QR code dialog dismissed via button click')
+                return true
+            }
+
+            // Method 5: JavaScript injection to close dialog
+            const jsResult = await page.evaluate(() => {
+                // Find dialog by role
+                const dialogs = document.querySelectorAll('[role="dialog"]')
+                for (const dialog of dialogs) {
+                    const text = dialog.textContent || ''
+                    if (/passkey|qr code|phone or tablet/i.test(text)) {
+                        // Try to find and click cancel/back button
+                        const buttons = dialog.querySelectorAll('button')
+                        for (const btn of buttons) {
+                            const btnText = (btn.textContent || '').toLowerCase()
+                            if (/back|cancel|retour|annuler|no thanks|maybe later|skip/i.test(btnText)) {
+                                btn.click()
+                                return true
+                            }
+                        }
+                        // If no button found, try to remove dialog from DOM
+                        dialog.remove()
+                        return true
+                    }
+                }
+                return false
+            }).catch(() => false)
+
+            if (jsResult) {
+                this.bot.log(this.bot.isMobile, 'LOGIN-PASSKEY', 'QR code dialog dismissed via JavaScript injection')
+                return true
+            }
+
+            this.bot.log(this.bot.isMobile, 'LOGIN-PASSKEY', 'Failed to dismiss QR code dialog with all methods', 'warn')
+            return false
+        } catch (error) {
+            this.bot.log(this.bot.isMobile, 'LOGIN-PASSKEY', `QR code dialog handler error: ${error}`, 'error')
+            return false
+        }
     }
 }

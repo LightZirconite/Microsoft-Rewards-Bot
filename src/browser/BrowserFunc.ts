@@ -243,6 +243,21 @@ export class BrowserFunc {
         const currentURL = new URL(target.url())
 
         try {
+            // Check if account is suspended BEFORE attempting to fetch dashboard data
+            const suspendedError = await target.locator('#rewards-user-suspended-error, #fraudErrorBody').first().isVisible({ timeout: 1000 }).catch(() => false)
+            if (suspendedError) {
+                this.bot.log(this.bot.isMobile, 'GET-DASHBOARD-DATA', '⛔ Account suspension detected, checking details...', 'error')
+
+                // Use SecurityDetector to handle suspension
+                const { SecurityDetector } = await import('../functions/login/SecurityDetector')
+                const { SecurityUtils } = await import('../functions/login/SecurityUtils')
+                const securityUtils = new SecurityUtils(this.bot)
+                const securityDetector = new SecurityDetector(this.bot, securityUtils)
+
+                await securityDetector.checkAccountSuspended(target)
+                throw new Error('Account suspended by Microsoft Rewards - account disabled in accounts.jsonc')
+            }
+
             // Should never happen since tasks are opened in a new tab!
             if (currentURL.hostname !== dashboardURL.hostname) {
                 this.bot.log(this.bot.isMobile, 'DASHBOARD-DATA', 'Provided page did not equal dashboard page, redirecting to dashboard page')

@@ -186,7 +186,59 @@ export class Browser {
                     await page.addInitScript(antiDetectScript)
                     await page.addInitScript(timezoneScript)
 
-                    // Virtual Authenticator support removed — no CDP WebAuthn setup performed here
+                    // CRITICAL: Block WebAuthn API calls to prevent passkey dialogs
+                    await page.addInitScript(() => {
+                        // Override navigator.credentials to block passkey requests
+                        if (window.navigator.credentials) {
+                            // Block credential creation (passkey enrollment)
+                            window.navigator.credentials.create = async function (...args: any[]) {
+                                console.log('[MRS] Blocked WebAuthn credential.create() call')
+                                // Reject with NotAllowedError (user cancelled)
+                                throw new DOMException('The operation either timed out or was not allowed.', 'NotAllowedError')
+                            }
+
+                            // Block credential retrieval (passkey authentication)
+                            window.navigator.credentials.get = async function (...args: any[]) {
+                                console.log('[MRS] Blocked WebAuthn credential.get() call')
+                                // Reject with NotAllowedError (user cancelled)
+                                throw new DOMException('The operation either timed out or was not allowed.', 'NotAllowedError')
+                            }
+                        }
+
+                        // Also remove PublicKeyCredential if it exists
+                        if (window.PublicKeyCredential) {
+                            // @ts-ignore - Override isUserVerifyingPlatformAuthenticatorAvailable
+                            window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable = async () => false
+                            // @ts-ignore - Override isConditionalMediationAvailable  
+                            window.PublicKeyCredential.isConditionalMediationAvailable = async () => false
+                        }
+                    })
+
+                    // CRITICAL: Disable WebAuthn popups using Virtual Authenticator
+                    // This prevents native "Choose where to save your passkey" dialogs
+                    try {
+                        const client = await page.context().newCDPSession(page)
+
+                        // Enable WebAuthn and add a virtual authenticator that auto-rejects
+                        await client.send('WebAuthn.enable')
+
+                        // Add virtual authenticator with settings that prevent UI prompts
+                        await client.send('WebAuthn.addVirtualAuthenticator', {
+                            options: {
+                                protocol: 'ctap2',
+                                transport: 'internal',
+                                hasResidentKey: false,  // No resident keys = no passkey storage
+                                hasUserVerification: false,  // No biometric/PIN verification
+                                isUserVerified: false,  // Always fail verification
+                                automaticPresenceSimulation: false  // No automatic approval
+                            }
+                        })
+
+                        this.bot.log(this.bot.isMobile, 'BROWSER', 'WebAuthn Virtual Authenticator enabled (passkey dialogs disabled)')
+                    } catch (cdpError) {
+                        // Non-critical: CDP might not be available on all browsers
+                        this.bot.log(this.bot.isMobile, 'BROWSER', `WebAuthn setup skipped: ${cdpError instanceof Error ? cdpError.message : String(cdpError)}`, 'warn')
+                    }
 
                     // IMPROVED: Use crypto-secure random for viewport sizes
                     const { secureRandomInt } = await import('../util/security/SecureRandom')

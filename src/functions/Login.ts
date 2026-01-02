@@ -109,6 +109,9 @@ export class Login {
         this.recoveryHandler = new RecoveryHandler(bot, this.securityUtils)
         this.securityDetector = new SecurityDetector(bot, this.securityUtils)
 
+        // Connect PasskeyHandler to TotpHandler for post-TOTP passkey handling
+        this.totpHandler.setPasskeyHandler(this.passkeyHandler)
+
         this.securityUtils.cleanupCompromisedInterval()
     }
 
@@ -861,6 +864,12 @@ export class Login {
         const portalSelector = await this.waitForRewardsRoot(page, DEFAULT_TIMEOUTS.portalWaitMs)
 
         if (!portalSelector) {
+            // Before trying fallback, check if account is suspended/banned
+            const isSuspended = await this.securityDetector.checkAccountSuspended(page)
+            if (isSuspended) {
+                throw new Error('Account suspended by Microsoft Rewards - disabled in accounts.jsonc')
+            }
+
             this.bot.log(this.bot.isMobile, 'LOGIN', 'Portal not found, trying goHome() fallback...', 'warn')
 
             try {

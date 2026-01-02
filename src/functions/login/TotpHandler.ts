@@ -10,6 +10,7 @@ export class TotpHandler {
     private lastTotpSubmit = 0
     private totpAttempts = 0
     private currentTotpSecret?: string
+    private passkeyHandler?: any // Will be set by Login class to avoid circular dependency
 
     // Unified selector system - DRY principle
     private static readonly TOTP_SELECTORS = {
@@ -62,6 +63,10 @@ export class TotpHandler {
         this.bot = bot
     }
 
+    public setPasskeyHandler(handler: any) {
+        this.passkeyHandler = handler
+    }
+
     public setTotpSecret(secret?: string) {
         this.currentTotpSecret = (secret && secret.trim()) || undefined
         this.lastTotpSubmit = 0
@@ -109,6 +114,18 @@ export class TotpHandler {
         await this.submitTotpCode(page, selector, secret)
         this.totpAttempts += 1
         this.lastTotpSubmit = Date.now()
+
+        // Handle potential Passkey QR code dialog that appears after TOTP submission
+        if (this.passkeyHandler) {
+            await this.bot.utils.wait(800) // Brief wait for dialog to appear
+            try {
+                await this.passkeyHandler.handlePasskeyPrompts(page, 'main')
+            } catch (error) {
+                // Non-critical: continue even if passkey handling fails
+                this.bot.log(this.bot.isMobile, 'LOGIN', `Passkey handling after TOTP: ${error}`, 'warn')
+            }
+        }
+
         await this.bot.utils.wait(1200)
         return true
     }
