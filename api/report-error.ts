@@ -1,5 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
-import express from 'express'
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 // In-memory rate limiting for error reporting
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
@@ -76,10 +75,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (payload.stack) {
             const stackLines = String(payload.stack).split('\n').slice(0, 15).join('\n')
-            embed.fields.push({ 
-                name: 'Stack Trace', 
-                value: `\`\`\`\n${stackLines.slice(0, 1000)}\n\`\`\``, 
-                inline: false 
+            embed.fields.push({
+                name: 'Stack Trace',
+                value: `\`\`\`\n${stackLines.slice(0, 1000)}\n\`\`\``,
+                inline: false
             })
         }
 
@@ -96,7 +95,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     } catch (error) {
         console.error('[ErrorReporting] Failed:', error)
-        return res.status(500).json({ 
+        return res.status(500).json({
             error: 'Failed to send error report',
             message: error instanceof Error ? error.message : 'Unknown error'
         })
