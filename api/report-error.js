@@ -1,9 +1,14 @@
 const axios = require('axios')
+const crypto = require('crypto')
 
 // In-memory rate limiting for error reporting
 const rateLimitMap = new Map()
 const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 10
+
+// In-memory deduplication cache for identical errors
+const errorCache = new Map()
+const ERROR_TTL_MS = 60 * 60 * 1000 // 1 hour dedupe window
 
 function isRateLimited(ip) {
     const now = Date.now()
@@ -25,7 +30,6 @@ function isRateLimited(ip) {
 // Sanitize text to prevent Discord mention abuse
 function sanitizeDiscordText(text) {
     if (!text) return ''
-
     return String(text)
         // Remove @everyone and @here mentions
         .replace(/@(everyone|here)/gi, '@\u200b$1')
@@ -37,6 +41,38 @@ function sanitizeDiscordText(text) {
         .replace(/<#(\d+)>/g, '#channel')
         // Limit length
         .slice(0, 2000)
+}
+
+function normalizeForId(text) {
+    if (!text) return ''
+    let t = String(text)
+    // Remove ISO timestamps
+    t = t.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z/g, '')
+    // Remove hex pointers
+    t = t.replace(/0x[0-9a-fA-F]+/g, '')
+    // Replace absolute paths
+    t = t.replace(/(?:[A-Za-z]:\\|\/)(?:[^\s:]*)/g, '[PATH]')
+    // Remove :line:col
+    t = t.replace(/:\d+(?::\d+)?/g, '')
+    // Collapse whitespace
+    return t.replace(/\s+/g, ' ').trim()
+}
+
+function computeErrorId(payload) {
+    const parts = []
+    parts.push(normalizeForId(payload.error || ''))
+    if (payload.stack) parts.push(normalizeForId(payload.stack))
+
+    const ctx = payload.context || {}
+    const ctxKeys = Object.keys(ctx).filter(k => k !== 'timestamp').sort()
+    for (const k of ctxKeys) parts.push(`${k}=${String(ctx[k])}`)
+
+    const add = payload.additionalContext || {}
+    const addKeys = Object.keys(add).sort()
+    for (const k of addKeys) parts.push(`${k}=${String(add[k])}`)
+
+    const canonical = parts.join('|')
+    return crypto.createHash('sha256').update(canonical).digest('hex').slice(0, 12)
 }
 
 // Vercel serverless handler
@@ -83,7 +119,20 @@ module.exports = async function handler(req, res) {
         const sanitizedPlatform = sanitizeDiscordText(payload.context?.platform || 'unknown')
         const sanitizedNode = sanitizeDiscordText(payload.context?.nodeVersion || 'unknown')
 
-        // Build Discord embed
+        // Compute deterministic error id and check dedupe cache
+        const computedId = computeErrorId({ error: sanitizedError, stack: sanitizedStack, context: payload.context, additionalContext: payload.additionalContext })
+        const now = Date.now()
+        const existing = errorCache.get(computedId)
+        if (existing && existing.expires > now) {
+            existing.count = (existing.count || 0) + 1
+            errorCache.set(computedId, existing)
+            console.log(`[ErrorReporting] Duplicate error (id=${computedId}) suppressed; count=${existing.count}`)
+            return res.json({ success: true, duplicate: true, id: computedId })
+        }
+        // Store in cache to prevent spam of same error within window
+        errorCache.set(computedId, { expires: now + ERROR_TTL_MS, count: 1 })
+
+        // Build Discord embed with Error ID included in footer
         const embed = {
             title: '🔴 Bot Error Report',
             description: `\`\`\`\n${sanitizedError.slice(0, 1900)}\n\`\`\``,
@@ -94,7 +143,7 @@ module.exports = async function handler(req, res) {
                 { name: 'Node', value: sanitizedNode, inline: true }
             ],
             timestamp: new Date().toISOString(),
-            footer: { text: 'Community Error Reporting' }
+            footer: { text: `Community Error Reporting — Error ID: ${computedId}` }
         }
 
         if (sanitizedStack) {
@@ -113,8 +162,8 @@ module.exports = async function handler(req, res) {
             embeds: [embed]
         }, { timeout: 10000 })
 
-        console.log('[ErrorReporting] Report sent successfully')
-        return res.json({ success: true, message: 'Error report received' })
+        console.log(`[ErrorReporting] Report sent successfully (id=${computedId})`)
+        return res.json({ success: true, message: 'Error report received', id: computedId })
 
     } catch (error) {
         console.error('[ErrorReporting] Failed:', error)

@@ -5,6 +5,7 @@ import { createServer } from 'http'
 import path from 'path'
 import { WebSocket, WebSocketServer } from 'ws'
 import { logEventEmitter } from '../util/notifications/Logger'
+import crypto from 'crypto'
 import { apiRouter } from './routes'
 import { DashboardLog, dashboardState } from './state'
 
@@ -94,6 +95,34 @@ export class DashboardServer {
     })
 
     // Error reporting endpoint (community error collection)
+    // Adds deterministic error ID and simple in-memory dedupe to avoid spam
+    const dashboardErrorCache = new Map()
+    const DASHBOARD_ERROR_TTL_MS = 60 * 60 * 1000 // 1 hour
+
+    function normalizeForId(text: string) {
+      if (!text) return ''
+      let t = String(text)
+      t = t.replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z/g, '')
+      t = t.replace(/0x[0-9a-fA-F]+/g, '')
+      t = t.replace(/(?:[A-Za-z]:\\|\/)(?:[^\s:]*)/g, '[PATH]')
+      t = t.replace(/:\d+(?::\d+)?/g, '')
+      return t.replace(/\s+/g, ' ').trim()
+    }
+
+    function computeErrorId(payload: any) {
+      const parts: string[] = []
+      parts.push(normalizeForId(payload.error || ''))
+      if (payload.stack) parts.push(normalizeForId(payload.stack))
+      const ctx = payload.context || {}
+      const ctxKeys = Object.keys(ctx).filter(k => k !== 'timestamp').sort()
+      for (const k of ctxKeys) parts.push(`${k}=${String(ctx[k])}`)
+      const add = payload.additionalContext || {}
+      const addKeys = Object.keys(add).sort()
+      for (const k of addKeys) parts.push(`${k}=${String(add[k])}`)
+      const canonical = parts.join('|')
+      return crypto.createHash('sha256').update(canonical).digest('hex').slice(0, 12)
+    }
+
     this.app.post('/api/report-error', this.apiLimiter, async (req, res) => {
       try {
         const webhookUrl = process.env.DISCORD_ERROR_WEBHOOK_URL
@@ -107,7 +136,22 @@ export class DashboardServer {
           return res.status(400).json({ error: 'Invalid payload' })
         }
 
-        // Build Discord embed
+        // Compute deterministic ID and dedupe similar errors for a short window
+        const sanitizedError = String(payload.error || '')
+        const sanitizedStack = payload.stack ? String(payload.stack) : undefined
+        const computedId = computeErrorId({ error: sanitizedError, stack: sanitizedStack, context: payload.context, additionalContext: payload.additionalContext })
+
+        const now = Date.now()
+        const existing = dashboardErrorCache.get(computedId)
+        if (existing && existing.expires > now) {
+          existing.count = (existing.count || 0) + 1
+          dashboardErrorCache.set(computedId, existing)
+          dashLog(`Duplicate error suppressed (id=${computedId})`, 'warn')
+          return res.json({ success: true, duplicate: true, id: computedId })
+        }
+        dashboardErrorCache.set(computedId, { expires: now + DASHBOARD_ERROR_TTL_MS, count: 1 })
+
+        // Build Discord embed with ID included
         const embed = {
           title: '🔴 Bot Error Report',
           description: `\`\`\`\n${String(payload.error).slice(0, 1900)}\n\`\`\``,
@@ -118,7 +162,7 @@ export class DashboardServer {
             { name: 'Node', value: String(payload.context?.nodeVersion || 'unknown'), inline: true }
           ],
           timestamp: new Date().toISOString(),
-          footer: { text: 'Community Error Reporting' }
+          footer: { text: `Community Error Reporting — Error ID: ${computedId}` }
         }
 
         if (payload.stack) {
@@ -134,8 +178,8 @@ export class DashboardServer {
           embeds: [embed]
         }, { timeout: 10000 })
 
-        dashLog('Error report sent to Discord', 'log')
-        return res.json({ success: true, message: 'Error report received' })
+        dashLog(`Error report sent to Discord (id=${computedId})`, 'log')
+        return res.json({ success: true, message: 'Error report received', id: computedId })
 
       } catch (error) {
         dashLog(`Error reporting failed: ${error instanceof Error ? error.message : String(error)}`, 'error')

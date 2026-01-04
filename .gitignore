@@ -21,3 +21,5 @@ accounts.main.jsonc
 .update-extract/
 .update-happened
 .update-restart-count
+.env
+.env.*

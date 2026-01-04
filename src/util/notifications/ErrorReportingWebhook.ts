@@ -1,6 +1,7 @@
 import axios from 'axios'
 import fs from 'fs'
 import path from 'path'
+import crypto from 'crypto'
 import { Config } from '../../interface/Config'
 
 /**
@@ -12,6 +13,7 @@ const ERROR_REPORTING_HARD_DISABLED = false
 interface ErrorReportPayload {
     error: string
     stack?: string
+    id?: string
     context: {
         version: string
         platform: string
@@ -38,6 +40,42 @@ const SANITIZE_PATTERNS: Array<[RegExp, string]> = [
 
 function sanitizeSensitiveText(text: string): string {
     return SANITIZE_PATTERNS.reduce((acc, [pattern, replace]) => acc.replace(pattern, replace), text)
+}
+
+function normalizeForId(text: string): string {
+    if (!text) return ''
+
+    // Remove ISO timestamps
+    let t = String(text).replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z/g, '')
+    // Remove hex addresses / pointers
+    t = t.replace(/0x[0-9a-fA-F]+/g, '')
+    // Replace absolute paths with placeholder
+    t = t.replace(/(?:[A-Za-z]:\\|\/)(?:[^\s:]*)/g, '[PATH]')
+    // Remove line/column numbers in stack traces (file:line:col)
+    t = t.replace(/:\d+(?:[:]\d+)?/g, '')
+    // Collapse whitespace
+    t = t.replace(/\s+/g, ' ').trim()
+    return t
+}
+
+function computeErrorId(payload: { error: string; stack?: string; context?: Record<string, unknown>; additionalContext?: Record<string, unknown> }): string {
+    const parts: string[] = []
+    parts.push(normalizeForId(payload.error || ''))
+    if (payload.stack) parts.push(normalizeForId(payload.stack))
+
+    // Include context keys except timestamp to keep ID deterministic across runs/machines
+    const ctx = payload.context || {}
+    const ctxEntries = Object.keys(ctx).filter(k => k !== 'timestamp').sort().map(k => `${k}=${String(ctx[k])}`)
+    parts.push(...ctxEntries)
+
+    // Additional context sorted
+    const add = payload.additionalContext || {}
+    const addEntries = Object.keys(add).sort().map(k => `${k}=${String(add[k])}`)
+    parts.push(...addEntries)
+
+    const canonical = parts.join('|')
+    const hash = crypto.createHash('sha256').update(canonical).digest('hex')
+    return hash.slice(0, 12)
 }
 
 /**
@@ -154,11 +192,19 @@ function buildErrorReportPayload(error: Error | string, additionalContext?: Reco
         }
     }
 
-    return {
+    const partialPayload = {
         error: sanitizedMessage,
         stack: sanitizedStack,
         context,
         additionalContext: Object.keys(sanitizedAdditionalContext).length > 0 ? sanitizedAdditionalContext : undefined
+    }
+
+    // Compute deterministic ID (exclude timestamp inside computeErrorId)
+    const id = computeErrorId(partialPayload as { error: string; stack?: string; context?: Record<string, unknown>; additionalContext?: Record<string, unknown> })
+
+    return {
+        ...partialPayload,
+        id
     }
 }
 
