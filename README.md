@@ -1,4 +1,4 @@
-# Microsoft Rewards Bot <a href="https://discord.gg/k5uHkx9mne"><img src="https://img.shields.io/badge/Discord-Join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord" /></a>
+# Microsoft Rewards Bot
 
 <p align="center">
 	<img src="assets/logo.png" alt="Microsoft Rewards Bot logo" width="180" />
