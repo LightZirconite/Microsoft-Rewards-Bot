@@ -9,6 +9,7 @@ Welcome to the **v3.5 Remaster** documentation. These guides cover everything fr
 
 ## Configuration
 - **[Configuration](configuration.md)** — Adjust bot behavior via `config.jsonc`.
+- **[Config Merging](config-merging.md)** — How automatic config updates preserve your settings.
 - **[Scheduling](scheduling.md)** — Automate daily runs with built-in scheduler.
 - **[Notifications](notifications.md)** — Discord webhooks and NTFY push alerts.
 

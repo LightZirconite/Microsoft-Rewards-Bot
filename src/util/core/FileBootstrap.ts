@@ -1,12 +1,15 @@
 import fs from 'fs'
 import path from 'path'
+import { ConfigMerger } from './ConfigMerger'
 
 /**
  * Bootstrap configuration files on startup
  * Automatically copies .example.jsonc files to .jsonc if they don't exist
+ * On subsequent runs, intelligently merges new options from .example.jsonc
  * 
  * This ensures first-time users have working config/accounts files
- * without manual renaming steps
+ * without manual renaming steps, and keeps existing users up-to-date
+ * without losing their customizations
  */
 export class FileBootstrap {
     private static readonly FILES_TO_BOOTSTRAP = [
@@ -24,7 +27,7 @@ export class FileBootstrap {
 
     /**
      * Bootstrap all necessary files
-     * @returns Array of files that were created
+     * @returns Array of files that were created (first-time setup)
      */
     public static bootstrap(): string[] {
         const created: string[] = []
@@ -36,6 +39,56 @@ export class FileBootstrap {
         }
 
         return created
+    }
+
+    /**
+     * Smart merge: Update existing config files with new options
+     * Preserves all user customizations and passwords
+     * Only runs if files already exist (not first-time setup)
+     * 
+     * @returns Object with merge results
+     */
+    public static smartMerge(): {
+        configChanged: boolean
+        accountsChanged: boolean
+        messages: string[]
+    } {
+        const rootDir = process.cwd()
+        const messages: string[] = []
+        let configChanged = false
+        let accountsChanged = false
+
+        // Only merge if both files exist (not first-time setup)
+        const configExists = fs.existsSync(path.join(rootDir, 'src/config.jsonc'))
+        const accountsExists = fs.existsSync(path.join(rootDir, 'src/accounts.jsonc'))
+
+        if (!configExists || !accountsExists) {
+            return { configChanged: false, accountsChanged: false, messages: [] }
+        }
+
+        // Merge config.jsonc
+        const configResult = ConfigMerger.mergeConfigFile(
+            path.join(rootDir, 'src/config.example.jsonc'),
+            path.join(rootDir, 'src/config.jsonc')
+        )
+
+        if (configResult.success && configResult.changes.length > 0) {
+            configChanged = true
+            messages.push('📝 Configuration: ' + configResult.changes.join(', '))
+        }
+
+        // Merge accounts.jsonc
+        const accountsResult = ConfigMerger.mergeAccountsFile(
+            path.join(rootDir, 'src/accounts.example.jsonc'),
+            path.join(rootDir, 'src/accounts.jsonc')
+        )
+
+        if (accountsResult.success && accountsResult.changes.length > 0) {
+            accountsChanged = true
+            messages.push('📝 Accounts: ' + accountsResult.changes.join(', '))
+        }
+
+        return { configChanged, accountsChanged, messages }
     }
 
     /**

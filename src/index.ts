@@ -1151,6 +1151,13 @@ async function main(): Promise<void> {
                     log('main', 'BOOTSTRAP', 'Please configure your accounts in src/accounts.jsonc before running the bot.', 'warn', 'yellow')
                     process.exit(0)
                 }
+            } else {
+                // Files already exist - check for new options from .example.jsonc
+                const mergeResult = FileBootstrap.smartMerge()
+                if (mergeResult.messages.length > 0) {
+                    log('main', 'CONFIG', 'Configuration updated with new options:', 'log', 'cyan')
+                    mergeResult.messages.forEach(msg => log('main', 'CONFIG', msg, 'log', 'cyan'))
+                }
             }
 
             // Check for updates BEFORE initializing and running tasks

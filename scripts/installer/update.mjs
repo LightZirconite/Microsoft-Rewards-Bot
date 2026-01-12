@@ -307,8 +307,68 @@ async function downloadFromGitHub(url, dest) {
 }
 
 /**
- * Smart update for config/accounts example files
- * Only updates if GitHub version has changed AND local user file matches old example
+ * Deep merge objects recursively (preserves user values)
+ * @param {any} example - New schema from example file
+ * @param {any} user - Existing user configuration
+ * @returns {any} Merged object
+ */
+function deepMerge(example, user) {
+  // If user value is not an object, keep it (primitives, arrays, null)
+  if (typeof user !== 'object' || user === null || Array.isArray(user)) {
+    return user
+  }
+
+  // If example is not an object, use user value
+  if (typeof example !== 'object' || example === null || Array.isArray(example)) {
+    return user
+  }
+
+  // Both are objects - merge recursively
+  const merged = { ...example } // Start with example schema
+
+  for (const key in user) {
+    if (key in example) {
+      // Key exists in both - recurse
+      merged[key] = deepMerge(example[key], user[key])
+    } else {
+      // Key only in user - preserve it (backward compatibility)
+      merged[key] = user[key]
+    }
+  }
+
+  return merged
+}
+
+/**
+ * Find keys that exist in example but not in user (new options)
+ * @param {any} example 
+ * @param {any} user 
+ * @param {string} prefix 
+ * @returns {string[]}
+ */
+function findNewKeys(example, user, prefix = '') {
+  const newKeys = []
+
+  if (typeof example !== 'object' || example === null || Array.isArray(example)) {
+    return newKeys
+  }
+
+  for (const key in example) {
+    const fullKey = prefix ? `${prefix}.${key}` : key
+
+    if (!(key in user)) {
+      newKeys.push(fullKey)
+    } else if (typeof example[key] === 'object' && !Array.isArray(example[key]) && example[key] !== null) {
+      newKeys.push(...findNewKeys(example[key], user[key], fullKey))
+    }
+  }
+
+  return newKeys
+}
+
+/**
+ * Smart update for config/accounts files with intelligent merging
+ * Preserves all user customizations while adding new options
  */
 async function smartUpdateExampleFiles(configData) {
   const files = []
@@ -336,7 +396,7 @@ async function smartUpdateExampleFiles(configData) {
     return // Nothing to update
   }
 
-  console.log('\n🔧 Checking for example file updates...')
+  console.log('\n🔧 Intelligently merging configuration updates...')
 
   for (const file of files) {
     try {
@@ -352,6 +412,10 @@ async function smartUpdateExampleFiles(configData) {
       const localExampleContent = existsSync(examplePath) ? readFileSync(examplePath, 'utf8') : ''
       const userContent = existsSync(targetPath) ? readFileSync(targetPath, 'utf8') : ''
 
+      // Parse JSON (strip comments)
+      const githubJson = JSON.parse(stripJsonComments(githubContent))
+      const userJson = existsSync(targetPath) ? JSON.parse(stripJsonComments(userContent)) : null
+
       // Check if GitHub version is different from local example
       if (githubContent === localExampleContent) {
         console.log(`✓ ${file.name}: No changes detected`)
@@ -359,27 +423,51 @@ async function smartUpdateExampleFiles(configData) {
         continue
       }
 
-      // GitHub version is different - check if user has modified their file
-      if (userContent === localExampleContent) {
-        // User hasn't modified their file - safe to update
-        console.log(`📝 ${file.name}: Updating to latest version...`)
+      // Update example file first
+      writeFileSync(examplePath, githubContent)
 
-        // Update example file
-        writeFileSync(examplePath, githubContent)
-
-        // Update user file (since they haven't customized it)
+      // If user file doesn't exist, create it
+      if (!userJson) {
         writeFileSync(targetPath, githubContent)
-
-        console.log(`✅ ${file.name}: Updated successfully`)
-      } else {
-        // User has customized their file - DO NOT overwrite
-        console.log(`⚠️  ${file.name}: User has custom changes, skipping auto-update`)
-        console.log(`   → Update available in: ${file.example}`)
-        console.log(`   → To disable this check: set "update.autoUpdate${file.name === 'Configuration' ? 'Config' : 'Accounts'}" to false`)
-
-        // Still update the example file for reference
-        writeFileSync(examplePath, githubContent)
+        console.log(`✅ ${file.name}: Created from latest example`)
+        rmSync(tempPath, { force: true })
+        continue
       }
+
+      // INTELLIGENT MERGE: Preserve user values, add new options
+      let merged
+      if (file.name === 'Accounts' && Array.isArray(githubJson) && Array.isArray(userJson)) {
+        // Special handling for accounts array
+        if (githubJson.length > 0 && userJson.length > 0) {
+          const exampleAccount = githubJson[0]
+          // Merge each user account with example schema
+          merged = userJson.map(account => deepMerge(exampleAccount, account))
+          
+          const newFields = findNewKeys(exampleAccount, userJson[0])
+          if (newFields.length > 0) {
+            console.log(`📝 ${file.name}: Added ${newFields.length} new field(s)`)
+            console.log(`   → ${newFields.join(', ')}`)
+          } else {
+            console.log(`✓ ${file.name}: Up to date`)
+          }
+        } else {
+          merged = userJson
+        }
+      } else {
+        // Standard config object merge
+        merged = deepMerge(githubJson, userJson)
+        
+        const newKeys = findNewKeys(githubJson, userJson)
+        if (newKeys.length > 0) {
+          console.log(`📝 ${file.name}: Added ${newKeys.length} new option(s)`)
+          console.log(`   → ${newKeys.join(', ')}`)
+        } else {
+          console.log(`✓ ${file.name}: Up to date`)
+        }
+      }
+
+      // Write merged file with formatting
+      writeFileSync(targetPath, JSON.stringify(merged, null, 4), 'utf8')
 
       // Clean up temp file
       rmSync(tempPath, { force: true })
@@ -392,80 +480,85 @@ async function smartUpdateExampleFiles(configData) {
 
   console.log('')
 }
-try {
-  // Read local version
-  const localPkgPath = join(process.cwd(), 'package.json')
-  if (!existsSync(localPkgPath)) {
-    console.log('⚠️  Could not find local package.json')
-    return { updateAvailable: false, localVersion: 'unknown', remoteVersion: 'unknown' }
-  }
 
-  const localPkg = JSON.parse(readFileSync(localPkgPath, 'utf8'))
-  const localVersion = localPkg.version
-
-  // Fetch remote version from GitHub API (no cache)
-  const repoOwner = 'LightZirconite'
-  const repoName = 'Microsoft-Rewards-Bot'
-  const branch = 'main'
-
-  console.log('🔍 Checking for updates...')
-  console.log(`   Local:  ${localVersion}`)
-
-  // Use GitHub API directly - no CDN cache, always fresh
-  const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/package.json?ref=${branch}`
-
-  return new Promise((resolve) => {
-    const options = {
-      headers: {
-        'User-Agent': 'Microsoft-Rewards-Bot-Updater',
-        'Accept': 'application/vnd.github.v3.raw',  // Returns raw file content
-        'Cache-Control': 'no-cache'
-      }
+/**
+ * Check if update is available by comparing versions
+ */
+async function checkVersion() {
+  try {
+    // Read local version
+    const localPkgPath = join(process.cwd(), 'package.json')
+    if (!existsSync(localPkgPath)) {
+      console.log('⚠️  Could not find local package.json')
+      return { updateAvailable: false, localVersion: 'unknown', remoteVersion: 'unknown' }
     }
 
-    const request = httpsGet(apiUrl, options, (res) => {
-      if (res.statusCode !== 200) {
-        console.log(`   ⚠️  GitHub API returned HTTP ${res.statusCode}`)
-        if (res.statusCode === 403) {
-          console.log('   ℹ️  Rate limit may be exceeded (60/hour). Try again later.')
+    const localPkg = JSON.parse(readFileSync(localPkgPath, 'utf8'))
+    const localVersion = localPkg.version
+
+    // Fetch remote version from GitHub API (no cache)
+    const repoOwner = 'LightZirconite'
+    const repoName = 'Microsoft-Rewards-Bot'
+    const branch = 'main'
+
+    console.log('🔍 Checking for updates...')
+    console.log(`   Local:  ${localVersion}`)
+
+    // Use GitHub API directly - no CDN cache, always fresh
+    const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/package.json?ref=${branch}`
+
+    return new Promise((resolve) => {
+      const options = {
+        headers: {
+          'User-Agent': 'Microsoft-Rewards-Bot-Updater',
+          'Accept': 'application/vnd.github.v3.raw',  // Returns raw file content
+          'Cache-Control': 'no-cache'
         }
-        resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
-        return
       }
 
-      let data = ''
-      res.on('data', chunk => data += chunk)
-      res.on('end', () => {
-        try {
-          const remotePkg = JSON.parse(data)
-          const remoteVersion = remotePkg.version
-          console.log(`   Remote: ${remoteVersion}`)
-
-          // Any difference triggers update (upgrade or downgrade)
-          const updateAvailable = localVersion !== remoteVersion
-          resolve({ updateAvailable, localVersion, remoteVersion })
-        } catch (err) {
-          console.log(`   ⚠️  Could not parse remote package.json: ${err.message}`)
+      const request = httpsGet(apiUrl, options, (res) => {
+        if (res.statusCode !== 200) {
+          console.log(`   ⚠️  GitHub API returned HTTP ${res.statusCode}`)
+          if (res.statusCode === 403) {
+            console.log('   ℹ️  Rate limit may be exceeded (60/hour). Try again later.')
+          }
           resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
+          return
         }
+
+        let data = ''
+        res.on('data', chunk => data += chunk)
+        res.on('end', () => {
+          try {
+            const remotePkg = JSON.parse(data)
+            const remoteVersion = remotePkg.version
+            console.log(`   Remote: ${remoteVersion}`)
+
+            // Any difference triggers update (upgrade or downgrade)
+            const updateAvailable = localVersion !== remoteVersion
+            resolve({ updateAvailable, localVersion, remoteVersion })
+          } catch (err) {
+            console.log(`   ⚠️  Could not parse remote package.json: ${err.message}`)
+            resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
+          }
+        })
+      })
+
+      request.on('error', (err) => {
+        console.log(`   ⚠️  Network error: ${err.message}`)
+        resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
+      })
+
+      request.setTimeout(10000, () => {
+        request.destroy()
+        console.log('   ⚠️  Request timeout (10s)')
+        resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
       })
     })
-
-    request.on('error', (err) => {
-      console.log(`   ⚠️  Network error: ${err.message}`)
-      resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
-    })
-
-    request.setTimeout(10000, () => {
-      request.destroy()
-      console.log('   ⚠️  Request timeout (10s)')
-      resolve({ updateAvailable: false, localVersion, remoteVersion: 'unknown' })
-    })
-  })
-} catch (err) {
-  console.log(`⚠️  Version check failed: ${err.message}`)
-  return { updateAvailable: false, localVersion: 'unknown', remoteVersion: 'unknown' }
-}
+  } catch (err) {
+    console.log(`⚠️  Version check failed: ${err.message}`)
+    return { updateAvailable: false, localVersion: 'unknown', remoteVersion: 'unknown' }
+  }
 }
 
 /**

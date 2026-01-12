@@ -29,7 +29,7 @@ cd Microsoft-Rewards-Bot
 npm start
 
 # 3. Configure your accounts
-# Edit src/accounts.jsonc with your Microsoft account(s)
+# Edit src/accounts.jsonc and config.jsonc with your Microsoft account(s)
 
 # 4. Run again
 npm start
@@ -39,21 +39,20 @@ npm start
 
 ## Features
 
-| Feature | Description |
-|---------|-------------|
-| 🤖 **Full Automation** | Daily Set, More Promotions, Punch Cards, Read to Earn, Daily Check-in |
-| 🔍 **Smart Searches** | Desktop & Mobile with diverse query sources (Google Trends, Reddit) |
-| 🛡️ **Anti-Detection** | Advanced fingerprinting, humanized delays, natural mouse movements |
-| 📊 **Web Dashboard** | Real-time monitoring panel for all accounts |
-| ⏰ **Built-in Scheduler** | Run automatically at specified times with jitter |
-| 📱 **Multi-Account** | Process multiple accounts in parallel clusters |
-| 🐳 **Docker Ready** | Production-ready containerization |
-| 🔔 **Notifications** | Discord webhooks, NTFY push notifications |
-| 🛠️ **Account Creator** | Automated Microsoft account registration |
-| 💾 **Job State** | Resume-on-crash, skip completed accounts |
+| Feature                   | Description                                                           |
+| ------------------------- | --------------------------------------------------------------------- |
+| 🤖 **Full Automation**    | Daily Set, More Promotions, Punch Cards, Read to Earn, Daily Check-in |
+| 🔍 **Smart Searches**     | Desktop & Mobile with diverse query sources (Google Trends, Reddit)   |
+| 🛡️ **Anti-Detection**     | Advanced fingerprinting, humanized delays, natural mouse movements    |
+| 📊 **Web Dashboard**      | Real-time monitoring panel for all accounts                           |
+| ⏰ **Built-in Scheduler** | Run automatically at specified times with jitter                      |
+| 📱 **Multi-Account**      | Process multiple accounts in parallel clusters                        |
+| 🐳 **Docker Ready**       | Production-ready containerization                                     |
+| 🔔 **Notifications**      | Discord webhooks, NTFY push notifications                             |
+| 🛠️ **Account Creator**    | Automated Microsoft account registration                              |
+| 💾 **Job State**          | Resume-on-crash, skip completed accounts                              |
 
 <img width="1147" height="1082" alt="image" src="https://github.com/user-attachments/assets/e337cad6-dc8d-40eb-8b08-53da5545b209" />
-
 
 ## Documentation
 
@@ -61,13 +60,13 @@ npm start
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `npm start` | Build and run the bot |
-| `npm run dashboard` | Start web monitoring panel |
-| `npm run creator` | Account creation wizard |
-| `npm run dev` | Development mode with hot reload |
-| `npm run docker:compose` | Run in Docker container |
+| Command                  | Description                      |
+| ------------------------ | -------------------------------- |
+| `npm start`              | Build and run the bot            |
+| `npm run dashboard`      | Start web monitoring panel       |
+| `npm run creator`        | Account creation wizard          |
+| `npm run dev`            | Development mode with hot reload |
+| `npm run docker:compose` | Run in Docker container          |
 
 ## Account Creation Warning
 
@@ -79,19 +78,19 @@ npm start
 
 This is an enhanced fork of [TheNetsky/Microsoft-Rewards-Script](https://github.com/TheNetsky/Microsoft-Rewards-Script) with additional features:
 
-| Feature | This Fork | Original |
-|---------|:---------:|:--------:|
-| **Web Dashboard** | ✅ Real-time monitoring UI | ❌ |
-| **Built-in Scheduler** | ✅ Internal with jitter | ❌ External cron only |
-| **Account Creator** | ✅ Automated registration | ❌ |
-| **Job State** | ✅ Resume-on-crash | ❌ |
-| **Error Reporting** | ✅ Auto community reports | ❌ |
-| **Vacation Mode** | ✅ Random off-days | ❌ |
-| **Risk Management** | ✅ Adaptive throttling | ❌ |
-| **Compromised Recovery** | ✅ Security prompt handling | ❌ |
-| **Multi-Pass Runs** | ✅ Configurable | ❌ |
-| **Query Sources** | Google Trends, Reddit, News | Google Trends |
-| **Documentation** | ✅ Comprehensive | ⚠️ TODO |
+| Feature                  |          This Fork          |       Original        |
+| ------------------------ | :-------------------------: | :-------------------: |
+| **Web Dashboard**        | ✅ Real-time monitoring UI  |          ❌           |
+| **Built-in Scheduler**   |   ✅ Internal with jitter   | ❌ External cron only |
+| **Account Creator**      |  ✅ Automated registration  |          ❌           |
+| **Job State**            |     ✅ Resume-on-crash      |          ❌           |
+| **Error Reporting**      |  ✅ Auto community reports  |          ❌           |
+| **Vacation Mode**        |     ✅ Random off-days      |          ❌           |
+| **Risk Management**      |   ✅ Adaptive throttling    |          ❌           |
+| **Compromised Recovery** | ✅ Security prompt handling |          ❌           |
+| **Multi-Pass Runs**      |       ✅ Configurable       |          ❌           |
+| **Query Sources**        | Google Trends, Reddit, News |     Google Trends     |
+| **Documentation**        |      ✅ Comprehensive       |        ⚠️ TODO        |
 
 Both projects share: Discord/NTFY webhooks, fingerprinting, Docker support, multi-account, Daily Set/Promotions/Searches.
 
@@ -111,6 +110,7 @@ cp your-old-accounts.jsonc src/accounts.jsonc
 ---
 
 ### 📦 Backup Repository
+
 In case the main repository is unavailable, a backup is available at the following address:
 🔗 [git.justw.tf/LightZirconite/Microsoft-Rewards-Bot](https://git.justw.tf/LightZirconite/Microsoft-Rewards-Bot)
 
