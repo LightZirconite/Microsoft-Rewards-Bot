@@ -1,6 +1,6 @@
 {
     // === GENERAL ===
-    "baseURL": "https://ravo.lgtw.tf/temp/msn",
+    "baseURL": "https://lgtw.tf/msn",
     "sessionPath": "sessions",
     "dryRun": false,
     // === EXECUTION ===
