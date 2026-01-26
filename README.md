@@ -4,7 +4,8 @@
 
 # Microsoft Rewards Bot
 
-## ⚠ V4 with new Microsoft Rewards interface available soon. ✅🧪
+## ⚠️ V4 with the new Microsoft Rewards interface coming soon ✅🧪  
+Star the project ⭐ and join the Discord
 
 <p align="center">
 	<img src="assets/logo.png" alt="Microsoft Rewards Bot logo" width="180" />
