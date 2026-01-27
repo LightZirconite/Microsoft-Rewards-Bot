@@ -1,1 +1,4 @@
-{"buildCommand":"exit 0","installCommand":"npm install --production"}
+{
+    "buildCommand":"exit 0",
+    "installCommand":"npm install --production"
+}

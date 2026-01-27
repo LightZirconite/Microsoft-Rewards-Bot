@@ -1,7 +1,3 @@
-<a href="https://discord.gg/k5uHkx9mne">
-  <img src="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white&logoWidth=40" alt="Discord" />
-</a>
-
 # Microsoft Rewards Bot
 
 ## ⚠️ V4 with the new Microsoft Rewards interface coming soon ✅🧪  
