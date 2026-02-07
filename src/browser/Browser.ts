@@ -7,6 +7,7 @@ import { AccountProxy } from "../interface/Account";
 import { updateFingerprintUserAgent } from "../util/browser/UserAgent";
 import {
     getAntiDetectionScript,
+    getLightweightAntiDetectionScript,
     getTimezoneScript,
 } from "../util/security/AntiDetectionScripts";
 import {
@@ -254,8 +255,13 @@ export class Browser {
     const locale = antiDetectConfig.locale || "en-US";
     const languages = antiDetectConfig.languages || ["en-US", "en"];
 
-    // Generate comprehensive anti-detection script
-    const antiDetectScript = getAntiDetectionScript({
+    // Generate BOTH lightweight and comprehensive anti-detection scripts
+    const lightweightScript = getLightweightAntiDetectionScript({
+      platform: this.bot.isMobile ? "Android" : "Win32",
+      vendor: "Google Inc.",
+    });
+
+    const comprehensiveScript = getAntiDetectionScript({
       timezone,
       locale,
       languages,
@@ -272,8 +278,32 @@ export class Browser {
     try {
       context.on("page", async (page) => {
         try {
-          // CRITICAL: Inject anti-detection scripts BEFORE any page load
-          await page.addInitScript(antiDetectScript);
+          // SMART DETECTION: Use lightweight scripts for tracking/non-critical pages
+          // and comprehensive protection for Microsoft domains
+          const smartAntiDetectScript = `
+(function() {
+    const url = window.location.href;
+    const isTrackingSite = url.includes('lgtw.tf') || 
+                          url.includes('about:blank') ||
+                          url === '' ||
+                          url === 'about:blank';
+    const isMicrosoftSite = url.includes('microsoft.com') || 
+                           url.includes('bing.com') || 
+                           url.includes('live.com') ||
+                           url.includes('login.microsoftonline.com');
+    
+    // For tracking sites, use ONLY lightweight protection (fast load, no JS blocking)
+    if (isTrackingSite && !isMicrosoftSite) {
+        ${lightweightScript}
+    } else {
+        // For Microsoft sites, use comprehensive 23-layer protection
+        ${comprehensiveScript}
+    }
+})();
+          `.trim();
+
+          // CRITICAL: Inject smart anti-detection script BEFORE any page load
+          await page.addInitScript(smartAntiDetectScript);
           await page.addInitScript(timezoneScript);
 
           // NEW 2026: Enhanced viewport randomization
@@ -402,7 +432,7 @@ export class Browser {
           this.bot.log(
             this.bot.isMobile,
             "BROWSER",
-            `Page configured with 23-layer anti-detection + TLS/HTTP2 protection`,
+            `Page configured with smart anti-detection (lightweight for tracking sites, 23-layer for Microsoft) + TLS/HTTP2 protection`,
           );
         } catch (e) {
           this.bot.log(

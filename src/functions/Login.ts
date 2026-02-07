@@ -597,17 +597,28 @@ export class Login {
         this.bot.log(
           this.bot.isMobile,
           'LOGIN',
-          'Detected tracking page, waiting for auto-redirect (max 10s)...',
+          'Detected tracking page, waiting for auto-redirect (max 8s)...',
         );
         
-        // Wait for redirect to rewards.bing.com (tracking site redirects after 5s)
+        // Wait for redirect to rewards.bing.com (tracking site redirects after ~5s)
+        // Using Promise.race to ensure we respect the timeout
+        const redirectPromise = page.waitForFunction(
+          () => {
+            const href = window.location.href;
+            return href.includes('rewards.bing.com') || 
+                   href.includes('bing.com') ||
+                   (href.includes('microsoft.com') && !href.includes('lgtw.tf'));
+          },
+          { timeout: 8000, polling: 200 } // Check every 200ms
+        );
+        
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Redirect timeout')), 8000)
+        );
+        
         try {
-          await page.waitForFunction(
-            () => window.location.href.includes('rewards.bing.com') || 
-                  window.location.href.includes('bing.com'),
-            { timeout: 10000 }
-          );
-          await this.bot.utils.wait(1000); // Let page stabilize
+          await Promise.race([redirectPromise, timeoutPromise]);
+          await this.bot.utils.wait(500); // Let page stabilize
           this.bot.log(
             this.bot.isMobile,
             'LOGIN',
@@ -621,10 +632,20 @@ export class Login {
             'warn',
           );
           // Fallback: navigate directly to rewards.bing.com
-          await page.goto('https://rewards.bing.com/', {
-            waitUntil: 'domcontentloaded',
-            timeout: DEFAULT_TIMEOUTS.navigationTimeout
-          });
+          try {
+            await page.goto('https://rewards.bing.com/', {
+              waitUntil: 'domcontentloaded',
+              timeout: DEFAULT_TIMEOUTS.navigationTimeout
+            });
+            await this.bot.utils.wait(500);
+          } catch (navError) {
+            this.bot.log(
+              this.bot.isMobile,
+              'LOGIN',
+              `Manual navigation failed: ${navError instanceof Error ? navError.message : String(navError)}`,
+              'warn',
+            );
+          }
         }
       }
 
