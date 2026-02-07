@@ -665,5 +665,125 @@ export function getTimezoneScript(timezone?: string, locale?: string): string {
 `
 }
 
+/**
+ * Get a LIGHTWEIGHT anti-detection script for non-critical pages (tracking, redirects, etc.)
+ * 
+ * This version includes ONLY the 5 most critical layers:
+ * 1. WebDriver detection removal
+ * 2. Chrome runtime mocking
+ * 3. Basic navigator properties
+ * 
+ * Use this for:
+ * - Tracking pages
+ * - Redirect pages
+ * - Any non-Microsoft pages
+ * 
+ * This dramatically improves page load speed while maintaining basic anti-detection.
+ */
+export function getLightweightAntiDetectionScript(options: {
+    platform?: string       // e.g., 'Win32'
+    vendor?: string         // e.g., 'Google Inc.'
+} = {}): string {
+    const opts = JSON.stringify(options)
+
+    return `
+(function() {
+    'use strict';
+    
+    const CONFIG = ${opts};
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LIGHTWEIGHT LAYER 1: WebDriver Detection Removal (CRITICAL)
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    try {
+        Object.defineProperty(navigator, 'webdriver', {
+            get: () => undefined,
+            configurable: true,
+            enumerable: true
+        });
+    } catch (e) {}
+    
+    // Remove automation properties
+    const autoProps = [
+        '__webdriver_evaluate', '__selenium_evaluate', '$cdc_asdjflasutopfhvcZLmcfl_',
+        'webdriver', 'domAutomation', 'domAutomationController'
+    ];
+    
+    for (const prop of autoProps) {
+        try {
+            if (prop in window) delete window[prop];
+            if (prop in navigator) delete navigator[prop];
+        } catch (e) {}
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LIGHTWEIGHT LAYER 2: Chrome Runtime Mocking
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    if (!window.chrome) window.chrome = {};
+    if (!window.chrome.runtime) {
+        window.chrome.runtime = {
+            sendMessage: function(msg, cb) { if (cb) setTimeout(() => cb(), 0); },
+            onMessage: { addListener: function() {} },
+            id: undefined
+        };
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LIGHTWEIGHT LAYER 3: Basic Navigator Properties
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    if (CONFIG.platform) {
+        try {
+            Object.defineProperty(navigator, 'platform', {
+                get: () => CONFIG.platform,
+                configurable: true
+            });
+        } catch (e) {}
+    }
+    
+    if (CONFIG.vendor) {
+        try {
+            Object.defineProperty(navigator, 'vendor', {
+                get: () => CONFIG.vendor,
+                configurable: true
+            });
+        } catch (e) {}
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LIGHTWEIGHT LAYER 4: Permissions API Fix
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    if (navigator.permissions && navigator.permissions.query) {
+        const originalQuery = navigator.permissions.query;
+        navigator.permissions.query = function(params) {
+            if (params.name === 'notifications') {
+                return Promise.resolve({ state: 'prompt', name: 'notifications' });
+            }
+            return originalQuery.call(this, params);
+        };
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LIGHTWEIGHT LAYER 5: Plugin Array (removes Playwright fingerprint)
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    try {
+        Object.defineProperty(navigator, 'plugins', {
+            get: () => [
+                { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+                { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: 'Portable Document Format' },
+                { name: 'Native Client', filename: 'internal-nacl-plugin', description: 'Native Client Executable' }
+            ],
+            configurable: true
+        });
+    } catch (e) {}
+    
+})();
+`
+}
+
 // All exports are named - use individual imports:
-// import { getAntiDetectionScript, getTimezoneScript } from './AntiDetectionScripts'
+// import { getAntiDetectionScript, getLightweightAntiDetectionScript, getTimezoneScript } from './AntiDetectionScripts'

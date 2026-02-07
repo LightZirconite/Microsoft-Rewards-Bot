@@ -590,6 +590,44 @@ export class Login {
       await this.bot.browser.utils.reloadBadPage(page);
       await this.bot.utils.wait(250);
 
+      // TRACKING SITE DETECTION: Wait for automatic redirect from tracking page
+      const currentUrl = page.url();
+      if (currentUrl.includes('lgtw.tf/Microsoft-Rewards-Bot-Legacy') || 
+          currentUrl.includes('about:blank')) {
+        this.bot.log(
+          this.bot.isMobile,
+          'LOGIN',
+          'Detected tracking page, waiting for auto-redirect (max 10s)...',
+        );
+        
+        // Wait for redirect to rewards.bing.com (tracking site redirects after 5s)
+        try {
+          await page.waitForFunction(
+            () => window.location.href.includes('rewards.bing.com') || 
+                  window.location.href.includes('bing.com'),
+            { timeout: 10000 }
+          );
+          await this.bot.utils.wait(1000); // Let page stabilize
+          this.bot.log(
+            this.bot.isMobile,
+            'LOGIN',
+            '✓ Auto-redirect completed successfully',
+          );
+        } catch (error) {
+          this.bot.log(
+            this.bot.isMobile,
+            'LOGIN',
+            'Tracking redirect timeout, attempting manual navigation...',
+            'warn',
+          );
+          // Fallback: navigate directly to rewards.bing.com
+          await page.goto('https://rewards.bing.com/', {
+            waitUntil: 'domcontentloaded',
+            timeout: DEFAULT_TIMEOUTS.navigationTimeout
+          });
+        }
+      }
+
       let portalSelector = await this.waitForRewardsRoot(page, 8000);
 
       if (!portalSelector) {
