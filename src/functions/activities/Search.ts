@@ -8,6 +8,7 @@ import { Counters, DashboardData } from "../../interface/DashboardData";
 import { GoogleSearch } from "../../interface/Search";
 import { HumanTyping } from "../../util/browser/HumanTyping";
 import { waitForElementSmart } from "../../util/browser/SmartWait";
+import { secureRandom } from "../../util/security/SecureRandom";
 
 type GoogleTrendsResponse = [
   string,
@@ -553,7 +554,7 @@ export class Search extends Workers {
       const viewportHeight = await page.evaluate(() => window.innerHeight);
       const totalHeight = await page.evaluate(() => document.body.scrollHeight);
       const randomScrollPosition = Math.floor(
-        Math.random() * (totalHeight - viewportHeight),
+        secureRandom() * (totalHeight - viewportHeight),
       );
 
       await page.evaluate((scrollPos: number) => {

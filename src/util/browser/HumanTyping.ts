@@ -13,6 +13,7 @@
  */
 
 import type { Locator } from "rebrowser-playwright";
+import { log } from "../notifications/Logger";
 import {
     secureRandom,
     secureRandomBool,
@@ -149,8 +150,11 @@ export class HumanTyping {
       !actualValue.includes("@") ||
       !actualValue.includes(domain)
     ) {
-      console.warn(
-        `[HumanTyping.typeEmail] WARNING: Email may not have been typed correctly. Expected: ${email}, Got: ${actualValue}`,
+      log(
+        false,
+        "HUMAN-TYPING",
+        `Email may not have been typed correctly. Expected: ${email}, Got: ${actualValue}`,
+        "warn",
       );
     }
   }

@@ -80,10 +80,15 @@ export class MicrosoftRewardsBot {
   private globalStandby: { active: boolean; reason?: string } = {
     active: false,
   };
-  private accountJobState?: JobState;
+  private _accountJobState?: JobState;
   private accountRunCounts: Map<string, number> = new Map();
 
   public axios!: AxiosClient;
+
+  /** Public accessor for the shared JobState instance (used by Workers) */
+  get accountJobState(): JobState | undefined {
+    return this._accountJobState;
+  }
 
   constructor(isMobile: boolean) {
     this.isMobile = isMobile;
@@ -122,7 +127,7 @@ export class MicrosoftRewardsBot {
 
     // Initialize job state
     if (this.config.jobState?.enabled !== false) {
-      this.accountJobState = new JobState(this.config);
+      this._accountJobState = new JobState(this.config);
     }
   }
 

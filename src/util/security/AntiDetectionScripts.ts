@@ -1,9 +1,9 @@
 /**
  * Advanced Anti-Detection Script Injector
- * 
+ *
  * CRITICAL: This module contains all client-side anti-detection scripts
  * that must be injected BEFORE page loads to prevent bot detection
- * 
+ *
  * DETECTION VECTORS ADDRESSED:
  * 1. WebDriver detection (navigator.webdriver)
  * 2. Chrome DevTools Protocol detection
@@ -32,23 +32,25 @@
 /**
  * Get the complete anti-detection script to inject
  * This is a self-contained script string that runs in browser context
- * 
+ *
  * @param options - Configuration options
  * @returns Script string to inject via page.addInitScript()
  */
-export function getAntiDetectionScript(options: {
-    timezone?: string       // e.g., 'America/New_York'
-    locale?: string         // e.g., 'en-US'
-    languages?: string[]    // e.g., ['en-US', 'en']
-    platform?: string       // e.g., 'Win32'
-    vendor?: string         // e.g., 'Google Inc.'
-    webglVendor?: string    // e.g., 'Intel Inc.'
-    webglRenderer?: string  // e.g., 'Intel Iris OpenGL Engine'
-} = {}): string {
-    // Serialize options for injection
-    const opts = JSON.stringify(options)
+export function getAntiDetectionScript(
+  options: {
+    timezone?: string; // e.g., 'America/New_York'
+    locale?: string; // e.g., 'en-US'
+    languages?: string[]; // e.g., ['en-US', 'en']
+    platform?: string; // e.g., 'Win32'
+    vendor?: string; // e.g., 'Google Inc.'
+    webglVendor?: string; // e.g., 'Intel Inc.'
+    webglRenderer?: string; // e.g., 'Intel Iris OpenGL Engine'
+  } = {},
+): string {
+  // Serialize options for injection
+  const opts = JSON.stringify(options);
 
-    return `
+  return `
 (function() {
     'use strict';
     
@@ -76,7 +78,7 @@ export function getAntiDetectionScript(options: {
     }
     
     // Crypto-quality random (seeded per session for consistency)
-    const sessionSeed = Date.now() ^ (Math.random() * 0xFFFFFFFF);
+    const sessionSeed = Date.now() ^ (crypto.getRandomValues(new Uint32Array(1))[0]);
     let randState = sessionSeed;
     function secureRand() {
         randState = (randState * 1664525 + 1013904223) >>> 0;
@@ -459,9 +461,9 @@ export function getAntiDetectionScript(options: {
                 // Return realistic device list with randomized IDs
                 return devices.map(device => ({
                     deviceId: device.deviceId ? 
-                        'device_' + Math.random().toString(36).substring(2, 15) : '',
+                        'device_' + secureRand().toString(36).substring(2, 15) : '',
                     groupId: device.groupId ?
-                        'group_' + Math.random().toString(36).substring(2, 15) : '',
+                        'group_' + secureRand().toString(36).substring(2, 15) : '',
                     kind: device.kind,
                     label: '' // Don't expose labels (privacy)
                 }));
@@ -613,22 +615,24 @@ export function getAntiDetectionScript(options: {
     window.__antiDetectionInitialized = true;
     
 })();
-`
+`;
 }
 
 /**
  * Get script for consistent timezone/locale
- * 
+ *
  * @param timezone - IANA timezone (e.g., 'America/New_York')
  * @param locale - BCP 47 locale (e.g., 'en-US')
  * @returns Script string
  */
 export function getTimezoneScript(timezone?: string, locale?: string): string {
-    return `
+  return `
 (function() {
     'use strict';
     
-    ${timezone ? `
+    ${
+      timezone
+        ? `
     // Override timezone
     const targetTimezone = '${timezone}';
     
@@ -653,40 +657,48 @@ export function getTimezoneScript(timezone?: string, locale?: string): string {
     };
     Intl.DateTimeFormat.prototype = OriginalDateTimeFormat.prototype;
     Intl.DateTimeFormat.supportedLocalesOf = OriginalDateTimeFormat.supportedLocalesOf;
-    ` : ''}
+    `
+        : ""
+    }
     
-    ${locale ? `
+    ${
+      locale
+        ? `
     // Override locale detection
     Object.defineProperty(navigator, 'language', { get: () => '${locale}' });
-    Object.defineProperty(navigator, 'languages', { get: () => ['${locale}', '${locale.split('-')[0]}'] });
-    ` : ''}
+    Object.defineProperty(navigator, 'languages', { get: () => ['${locale}', '${locale.split("-")[0]}'] });
+    `
+        : ""
+    }
     
 })();
-`
+`;
 }
 
 /**
  * Get a LIGHTWEIGHT anti-detection script for non-critical pages (tracking, redirects, etc.)
- * 
+ *
  * This version includes ONLY the 5 most critical layers:
  * 1. WebDriver detection removal
  * 2. Chrome runtime mocking
  * 3. Basic navigator properties
- * 
+ *
  * Use this for:
  * - Tracking pages
  * - Redirect pages
  * - Any non-Microsoft pages
- * 
+ *
  * This dramatically improves page load speed while maintaining basic anti-detection.
  */
-export function getLightweightAntiDetectionScript(options: {
-    platform?: string       // e.g., 'Win32'
-    vendor?: string         // e.g., 'Google Inc.'
-} = {}): string {
-    const opts = JSON.stringify(options)
+export function getLightweightAntiDetectionScript(
+  options: {
+    platform?: string; // e.g., 'Win32'
+    vendor?: string; // e.g., 'Google Inc.'
+  } = {},
+): string {
+  const opts = JSON.stringify(options);
 
-    return `
+  return `
 (function() {
     'use strict';
     
@@ -782,12 +794,12 @@ export function getLightweightAntiDetectionScript(options: {
     } catch (e) {}
     
 })();
-`
+`;
 }
 
 /**
  * Get a MEDIUM anti-detection script specifically designed to bypass disable-devtool
- * 
+ *
  * This version includes ~12 critical layers focused on defeating anti-debugging scripts:
  * 1. WebDriver detection removal (comprehensive)
  * 2. Chrome runtime mocking
@@ -801,22 +813,24 @@ export function getLightweightAntiDetectionScript(options: {
  * 10. iframe detection blocking
  * 11. Performance timing normalization
  * 12. Error stack trace sanitization
- * 
+ *
  * Use this for:
  * - Tracking pages with anti-debugging protection (disable-devtool)
  * - Sites that actively detect automation
  * - Non-Microsoft pages that need stronger protection than lightweight
- * 
+ *
  * Performance: Faster than comprehensive (23 layers) but stronger than lightweight
  */
-export function getMediumAntiDetectionScript(options: {
-    platform?: string
-    vendor?: string
-    locale?: string
-} = {}): string {
-    const opts = JSON.stringify(options)
+export function getMediumAntiDetectionScript(
+  options: {
+    platform?: string;
+    vendor?: string;
+    locale?: string;
+  } = {},
+): string {
+  const opts = JSON.stringify(options);
 
-    return `
+  return `
 (function() {
     'use strict';
     
@@ -1069,14 +1083,14 @@ export function getMediumAntiDetectionScript(options: {
     
     const OriginalDate = window.Date;
     const OriginalDateNow = Date.now;
-    let timeOffset = Math.random() * 20 - 10; // ±10ms jitter
+    let timeOffset = secureRand() * 20 - 10; // ±10ms jitter
     
     Date.now = function() {
         return OriginalDateNow() + timeOffset;
     };
     
 })();
-`
+`;
 }
 
 // All exports are named - use individual imports:

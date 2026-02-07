@@ -1015,7 +1015,8 @@ export class BrowserFunc {
       this.bot.log(
         this.bot.isMobile,
         "QUIZ-REFRESH",
-        "An error occurred:" + error,
+        "An error occurred: " +
+          (error instanceof Error ? error.message : String(error)),
         "error",
       );
       return false;
@@ -1072,7 +1073,8 @@ export class BrowserFunc {
       this.bot.log(
         this.bot.isMobile,
         "GET-PUNCHCARD-ACTIVITY",
-        "An error occurred:" + error,
+        "An error occurred: " +
+          (error instanceof Error ? error.message : String(error)),
         "error",
       );
     }

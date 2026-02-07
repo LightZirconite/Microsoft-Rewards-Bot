@@ -336,7 +336,8 @@ export class TotpHandler {
       this.bot.log(
         this.bot.isMobile,
         "LOGIN",
-        "2FA code entry error: " + error,
+        "2FA code entry error: " +
+          (error instanceof Error ? error.message : String(error)),
         "warn",
       );
     } finally {
@@ -430,7 +431,8 @@ export class TotpHandler {
       this.bot.log(
         this.bot.isMobile,
         "LOGIN",
-        "Failed to submit TOTP automatically: " + error,
+        "Failed to submit TOTP automatically: " +
+          (error instanceof Error ? error.message : String(error)),
         "warn",
       );
     }

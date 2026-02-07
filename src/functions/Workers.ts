@@ -17,7 +17,6 @@ import { Retry } from "../util/core/Retry";
 import { AdaptiveThrottler } from "../util/notifications/AdaptiveThrottler";
 import { logError } from "../util/notifications/Logger";
 import { getActivityStatsTracker } from "../util/state/ActivityStatsTracker";
-import { JobState } from "../util/state/JobState";
 
 // Selector patterns (extracted to avoid magic strings)
 const ACTIVITY_SELECTORS = {
@@ -37,11 +36,9 @@ const ACTIVITY_DELAYS = {
 
 export class Workers {
   public bot: MicrosoftRewardsBot;
-  private jobState: JobState;
 
   constructor(bot: MicrosoftRewardsBot) {
     this.bot = bot;
-    this.jobState = new JobState(this.bot.config);
   }
 
   // Daily Set
@@ -53,7 +50,7 @@ export class Workers {
     ).filter((x) => {
       if (this.bot.config.jobState?.enabled === false) return true;
       const email = this.bot.currentAccountEmail || "unknown";
-      return !this.jobState.isDone(email, today, x.offerId);
+      return !this.bot.accountJobState?.isDone(email, today, x.offerId);
     });
 
     if (!activitiesUncompleted.length) {
@@ -78,7 +75,7 @@ export class Workers {
     if (this.bot.config.jobState?.enabled !== false) {
       const email = this.bot.currentAccountEmail || "unknown";
       for (const a of activitiesUncompleted) {
-        this.jobState.markDone(email, today, a.offerId);
+        this.bot.accountJobState?.markDone(email, today, a.offerId);
       }
     }
 
@@ -204,7 +201,8 @@ export class Workers {
 
     // Check if there is a promotional item
     if (data.promotionalItem) {
-      // Convert and add the promotional item to the array
+      // SAFE CAST: PromotionalItem and MorePromotion share the same runtime shape from the API.
+      // The minor type differences (attributes type, promotionType enum vs string) are nominal only.
       morePromotions.push(data.promotionalItem as unknown as MorePromotion);
     }
 

@@ -335,10 +335,9 @@ export function loadAccounts(): Account[] {
         throw new Error("each account entry must be an object");
       }
 
-      // Use Record<string, any> to access dynamic properties from untrusted JSON
+      // Use Record<string, unknown> to access dynamic properties from untrusted JSON
       // Runtime validation below ensures type safety
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const a = entry as Record<string, any>;
+      const a = entry as Record<string, unknown>;
 
       // Validate required fields with proper type checking
       if (typeof a.email !== "string" || typeof a.password !== "string") {

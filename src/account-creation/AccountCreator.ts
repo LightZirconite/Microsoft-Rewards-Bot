@@ -3,6 +3,7 @@ import path from "path";
 import * as readline from "readline";
 import type { BrowserContext, Page } from "rebrowser-playwright";
 import { log } from "../util/notifications/Logger";
+import { secureRandom } from "../util/security/SecureRandom";
 import { DataGenerator } from "./DataGenerator";
 import { HumanBehavior } from "./HumanBehavior";
 import { CreatedAccount } from "./types";
@@ -77,8 +78,8 @@ export class AccountCreator {
         if (attempt < maxRetries) {
           // IMPROVED: Human-like variable delays (not exponential)
           // Real humans retry at inconsistent intervals
-          const baseDelay = initialDelayMs + Math.random() * 500;
-          const variance = Math.random() * 1000 - 500; // ±500ms random jitter
+          const baseDelay = initialDelayMs + secureRandom() * 500;
+          const variance = secureRandom() * 1000 - 500; // ±500ms random jitter
           const humanDelay = baseDelay + attempt * 800 + variance; // Gradual increase with randomness
 
           log(
@@ -92,7 +93,7 @@ export class AccountCreator {
 
           // IMPROVED: Random micro-gesture during retry (human frustration pattern)
           // CRITICAL: Can be disabled for sensitive operations (e.g., dropdowns) where scroll would break state
-          if (enableMicroGestures && Math.random() < 0.4) {
+          if (enableMicroGestures && secureRandom() < 0.4) {
             await this.human.microGestures(`${context}_RETRY_${attempt}`);
           }
         } else {
@@ -747,7 +748,7 @@ export class AccountCreator {
       await this.humanDelay(500, 1500);
 
       // IMPROVED: Sometimes extra gesture without action (human browsing)
-      if (Math.random() < 0.3) {
+      if (secureRandom() < 0.3) {
         await this.human.microGestures("SIGNUP_PAGE_READING");
         await this.humanDelay(1200, 2500);
       }
@@ -757,11 +758,11 @@ export class AccountCreator {
 
       // IMPROVED: Variable delay before inspecting email (not always immediate)
       const preEmailDelay: [number, number] =
-        Math.random() < 0.5 ? [800, 1500] : [300, 800];
+        secureRandom() < 0.5 ? [800, 1500] : [300, 800];
       await this.humanDelay(preEmailDelay[0], preEmailDelay[1]);
 
       // CRITICAL: Sometimes NO gesture (humans don't always move mouse)
-      if (Math.random() < 0.7) {
+      if (secureRandom() < 0.7) {
         await this.human.microGestures("EMAIL_FIELD");
       }
       await this.humanDelay(300, 800);
@@ -776,7 +777,7 @@ export class AccountCreator {
       log(false, "CREATOR", `✅ Email: ${emailResult}`, "log", "green");
 
       // IMPROVED: Variable behavior before password (not always gesture)
-      if (Math.random() < 0.6) {
+      if (secureRandom() < 0.6) {
         await this.human.microGestures("PASSWORD_PAGE");
       }
       await this.humanDelay(500, 1200);
@@ -805,7 +806,7 @@ export class AccountCreator {
       const confirmedEmail = finalEmail || emailResult;
 
       // IMPROVED: Random reading pattern (not always gesture)
-      if (Math.random() < 0.65) {
+      if (secureRandom() < 0.65) {
         await this.human.microGestures("BIRTHDATE_PAGE");
       }
       await this.humanDelay(400, 1000);
@@ -830,7 +831,7 @@ export class AccountCreator {
       }
 
       // IMPROVED: Variable inspection behavior
-      if (Math.random() < 0.55) {
+      if (secureRandom() < 0.55) {
         await this.human.microGestures("NAMES_PAGE");
         await this.humanDelay(400, 1000);
       } else {
