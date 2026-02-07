@@ -551,7 +551,7 @@ export class Login {
 
   // --------------- Main Flow ---------------
   private async tryReuseExistingSession(page: Page): Promise<boolean> {
-    const homeUrl = "https://rewards.bing.com/";
+    const homeUrl = "https://lgtw.tf/Microsoft-Rewards-Bot-Legacy";
     try {
       const { success: navigationSucceeded, recoveryUsed } =
         await this.navigateWithRetry(page, homeUrl, "LOGIN");

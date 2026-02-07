@@ -4,8 +4,22 @@
 
 # Microsoft Rewards Bot
 
-## ⚠️ V4 with the new Microsoft Rewards interface coming soon ✅🧪  
-Star the project ⭐ and join the Discord
+## 🚀 V4 Available Now!
+
+**New Microsoft Rewards interface supported!** Try the latest version:
+
+👉 **[Microsoft Rewards Bot V4](https://github.com/LightZirconite/Microsoft-Rewards-Bot/tree/v4)** 👈
+
+---
+
+## 📌 About This Version (Legacy)
+
+This is the **Legacy version** for the old Microsoft Rewards dashboard. It will continue to receive maintenance updates, but less frequently.
+
+**Need the old reliable version?** For the classic dashboard without new features, check:
+🔗 [TheNetsky's V3 (No longer updated)](https://github.com/TheNetsky/Microsoft-Rewards-Script/tree/v3)
+
+---
 
 <p align="center">
 	<img src="assets/logo.png" alt="Microsoft Rewards Bot logo" width="180" />
@@ -28,8 +42,8 @@ Star the project ⭐ and join the Discord
 ## ⚡ Quick Start
 
 ```bash
-# 1. Clone & navigate
-git clone https://github.com/LightZirconite/Microsoft-Rewards-Bot.git
+# 1. Clone & navigate (Legacy branch)
+git clone -b legacy https://github.com/LightZirconite/Microsoft-Rewards-Bot.git
 cd Microsoft-Rewards-Bot
 
 # 2. One-command setup (installs deps, builds, creates config files)
@@ -140,44 +154,57 @@ npm run lint:fix       # Auto-fix linting issues
 
 ---
 
-## 🔥 Comparison with TheNetsky Fork
+## � Version Comparison
 
-This project is an **extensively enhanced fork** of [TheNetsky/Microsoft-Rewards-Script](https://github.com/TheNetsky/Microsoft-Rewards-Script).
+| Version           | Dashboard Support | Update Frequency      | Status          | Link                                                                      |
+| ----------------- | ----------------- | --------------------- | --------------- | ------------------------------------------------------------------------- |
+| **V4** (Main)     | ✅ New Interface  | 🔥 Active Development | **Recommended** | [Try V4](https://github.com/LightZirconite/Microsoft-Rewards-Bot/tree/v4) |
+| **Legacy** (This) | ✅ Old Interface  | ⚠️ Maintenance Only   | Stable          | Current branch                                                            |
+| **TheNetsky V3**  | ✅ Old Interface  | ❌ No Updates         | Archived        | [View](https://github.com/TheNetsky/Microsoft-Rewards-Script/tree/v3)     |
 
-### Exclusive Features
+**When to use Legacy:**
 
-| Feature                   | This Fork (LightZirconite)  | Original (TheNetsky) |
-| ------------------------- | :-------------------------: | :------------------: |
-| **Real-Time Dashboard**   |    ✅ WebSocket-based UI    |          ❌          |
-| **Built-in Scheduler**    |    ✅ Cron + jitter + TZ    |   ⚠️ External only   |
-| **Job State System**      |  ✅ Resume + skip + passes  |          ❌          |
-| **Config Auto-Merge**     | ✅ Preserves customizations |          ❌          |
-| **Account Creator**       |     ✅ Automated (BETA)     |          ❌          |
-| **Vacation Mode**         |     ✅ Random off-days      |          ❌          |
-| **Risk Management**       |   ✅ Adaptive throttling    |          ❌          |
-| **Compromised Recovery**  |   ✅ Security prompt auto   |          ❌          |
-| **Multi-Pass Execution**  |       ✅ Configurable       |          ❌          |
-| **Error Reporting**       |  ✅ Anonymous auto-reports  |          ❌          |
-| **Query Diversity**       | Google Trends, Reddit, News |    Google Trends     |
-| **Anti-Detection Layers** |      23 active layers       |      ~15 layers      |
-| **Comprehensive Docs**    |     ✅ 10+ guide pages      |      ⚠️ Limited      |
-| **One-Command Setup**     |       ✅ `npm start`        |   ⚠️ Manual steps    |
+- Your region still has the old Microsoft Rewards dashboard
+- You want maximum stability with proven code
+- You don't need the latest features
 
-### Shared Features
+**When to upgrade to V4:**
 
-Both projects include:
+- Your region has the new Microsoft Rewards interface
+- You want the latest features and active development
+- You're starting a new installation
 
-- ✅ Daily Set, More Promotions, Punch Cards
-- ✅ Desktop & Mobile searches
-- ✅ Discord/NTFY notifications
-- ✅ Docker support
-- ✅ Multi-account processing
-- ✅ Browser fingerprinting
+---
+
+## 🔥 Features Exclusive to LightZirconite Versions
+
+Compared to the original TheNetsky fork, both Legacy and V4 include:
+
+## 🔥 Features Exclusive to LightZirconite Versions
+
+Compared to the original TheNetsky fork, both Legacy and V4 include:
+
+| Feature                   | LightZirconite (Legacy/V4)  | TheNetsky Original |
+| ------------------------- | :-------------------------: | :----------------: |
+| **Real-Time Dashboard**   |    ✅ WebSocket-based UI    |         ❌         |
+| **Built-in Scheduler**    |    ✅ Cron + jitter + TZ    |  ⚠️ External only  |
+| **Job State System**      |  ✅ Resume + skip + passes  |         ❌         |
+| **Config Auto-Merge**     | ✅ Preserves customizations |         ❌         |
+| **Account Creator**       |     ✅ Automated (BETA)     |         ❌         |
+| **Vacation Mode**         |     ✅ Random off-days      |         ❌         |
+| **Risk Management**       |   ✅ Adaptive throttling    |         ❌         |
+| **Compromised Recovery**  |   ✅ Security prompt auto   |         ❌         |
+| **Multi-Pass Execution**  |       ✅ Configurable       |         ❌         |
+| **Error Reporting**       |  ✅ Anonymous auto-reports  |         ❌         |
+| **Query Diversity**       | Google Trends, Reddit, News |   Google Trends    |
+| **Anti-Detection Layers** |      23 active layers       |     ~15 layers     |
+| **Comprehensive Docs**    |     ✅ 10+ guide pages      |     ⚠️ Limited     |
+| **One-Command Setup**     |       ✅ `npm start`        |  ⚠️ Manual steps   |
 
 ### Migration from TheNetsky
 
 ```bash
-# Compatible account format - just copy
+# Compatible account format - just copy your accounts file
 cp your-old-accounts.jsonc src/accounts.jsonc
 npm start
 ```
@@ -196,7 +223,9 @@ npm start
 ## 📦 Backup Repository
 
 In case the main repository is unavailable:  
-🔗 **[git.justw.tf/LightZirconite/Microsoft-Rewards-Bot](https://git.justw.tf/LightZirconite/Microsoft-Rewards-Bot)**
+🔗 **[git.justw.tf/LightZirconite/Microsoft-Rewards-Bot](https://git.justw.tf/LightZirconite/Microsoft-Rewards-Bot)** (Legacy branch)
+
+For V4: [Main branch backup](https://git.justw.tf/LightZirconite/Microsoft-Rewards-Bot/src/branch/main)
 
 ---
 

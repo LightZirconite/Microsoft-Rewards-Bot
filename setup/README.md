@@ -5,9 +5,11 @@ This folder contains setup and update scripts for the Microsoft Rewards Bot.
 ## Files
 
 ### setup.bat / setup.sh
+
 **First-time installation scripts** for Windows (.bat) and Linux/macOS (.sh).
 
 **What they do:**
+
 1. Check prerequisites (Node.js, npm)
 2. Create `accounts.jsonc` from template
 3. Guide you through account configuration
@@ -16,6 +18,7 @@ This folder contains setup and update scripts for the Microsoft Rewards Bot.
 6. Install Playwright Chromium browser
 
 **Usage:**
+
 ```bash
 # Windows
 .\setup\setup.bat
@@ -25,20 +28,24 @@ This folder contains setup and update scripts for the Microsoft Rewards Bot.
 ```
 
 **Important:** These scripts do NOT start the bot automatically. After setup, run:
+
 ```bash
 npm start
 ```
 
 ### update/update.mjs
+
 **Automatic update script** that keeps your bot up-to-date with the latest version.
 
 **Features:**
+
 - Uses GitHub API (downloads ZIP - no Git required)
 - Preserves your configuration and accounts
 - No merge conflicts, always clean
 - Automatic dependency installation and rebuild
 
 **Usage:**
+
 ```bash
 # Run update manually
 node scripts/installer/update.mjs
@@ -53,11 +60,13 @@ node scripts/installer/update.mjs
 ### First-time setup:
 
 **Windows:**
+
 ```batch
 .\setup\setup.bat
 ```
 
 **Linux/macOS:**
+
 ```bash
 chmod +x setup/setup.sh
 ./setup/setup.sh
@@ -85,23 +94,28 @@ npm run dashboard
 ## Troubleshooting
 
 ### "npm not found"
+
 Install Node.js from https://nodejs.org/ (v20 or newer recommended)
 
 ### "Setup failed"
+
 1. Delete `node_modules` folder
 2. Delete `package-lock.json` file
 3. Run setup again
 
 ### "Build failed"
+
 ```bash
 npm run clean
 npm run build
 ```
 
 ### Update issues
+
 If automatic updates fail, manually update:
+
 ```bash
-git pull origin main
+git pull origin legacy
 npm install
 npm run build
 ```

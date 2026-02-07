@@ -1,6 +1,10 @@
 # Microsoft Rewards Bot Docs
 
-Welcome to the **v3.5 Remaster** documentation. These guides cover everything from first-time setup to advanced configuration.
+Welcome to the **Legacy version** documentation for the old Microsoft Rewards dashboard.
+
+> 🚀 **Looking for V4?** Check out [V4 on the main branch](https://github.com/LightZirconite/Microsoft-Rewards-Bot/tree/v4) for the new dashboard interface.
+
+These guides cover everything from first-time setup to advanced configuration.
 
 ## Getting Started
 
