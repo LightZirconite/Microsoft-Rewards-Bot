@@ -785,5 +785,299 @@ export function getLightweightAntiDetectionScript(options: {
 `
 }
 
+/**
+ * Get a MEDIUM anti-detection script specifically designed to bypass disable-devtool
+ * 
+ * This version includes ~12 critical layers focused on defeating anti-debugging scripts:
+ * 1. WebDriver detection removal (comprehensive)
+ * 2. Chrome runtime mocking
+ * 3. DevTools detection blocking
+ * 4. Debugger statement protection
+ * 5. Console manipulation protection
+ * 6. Function toString() protection
+ * 7. Navigator properties
+ * 8. Permissions API
+ * 9. Plugins array
+ * 10. iframe detection blocking
+ * 11. Performance timing normalization
+ * 12. Error stack trace sanitization
+ * 
+ * Use this for:
+ * - Tracking pages with anti-debugging protection (disable-devtool)
+ * - Sites that actively detect automation
+ * - Non-Microsoft pages that need stronger protection than lightweight
+ * 
+ * Performance: Faster than comprehensive (23 layers) but stronger than lightweight
+ */
+export function getMediumAntiDetectionScript(options: {
+    platform?: string
+    vendor?: string
+    locale?: string
+} = {}): string {
+    const opts = JSON.stringify(options)
+
+    return `
+(function() {
+    'use strict';
+    
+    const CONFIG = ${opts};
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 1: WebDriver Detection Removal (COMPREHENSIVE)
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    try {
+        Object.defineProperty(navigator, 'webdriver', {
+            get: () => undefined,
+            configurable: true,
+            enumerable: true
+        });
+    } catch (e) {}
+    
+    // Remove ALL automation properties (critical for disable-devtool)
+    const autoProps = [
+        '__webdriver_evaluate', '__selenium_evaluate', '__webdriver_script_function',
+        '__webdriver_script_func', '__webdriver_script_fn', '__fxdriver_evaluate',
+        '__driver_unwrapped', '__webdriver_unwrapped', '__driver_evaluate',
+        '__selenium_unwrapped', '__fxdriver_unwrapped', '_Selenium_IDE_Recorder',
+        '_selenium', 'calledSelenium', '$cdc_asdjflasutopfhvcZLmcfl_',
+        '$chrome_asyncScriptInfo', '__$webdriverAsyncExecutor',
+        'webdriver', 'domAutomation', 'domAutomationController',
+        '__playwright', '__pw_manual', '__PW_inspect'
+    ];
+    
+    for (const prop of autoProps) {
+        try {
+            if (prop in window) delete window[prop];
+            if (prop in navigator) delete navigator[prop];
+            if (prop in document) delete document[prop];
+        } catch (e) {}
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 2: Chrome Runtime Mocking (FULL)
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    if (!window.chrome) window.chrome = {};
+    if (!window.chrome.runtime) {
+        window.chrome.runtime = {
+            connect: function() { return { onMessage: { addListener: function() {} }, postMessage: function() {}, disconnect: function() {} }; },
+            sendMessage: function(msg, cb) { if (cb) setTimeout(() => cb(), 0); },
+            onMessage: { addListener: function() {}, removeListener: function() {} },
+            onConnect: { addListener: function() {}, removeListener: function() {} },
+            getManifest: function() { return {}; },
+            getURL: function(path) { return 'chrome-extension://internal/' + path; },
+            id: undefined
+        };
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 3: DevTools Detection Blocking (CRITICAL for disable-devtool)
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    // Block devtools detection via window.outerHeight/innerHeight diff
+    let storedOuterHeight = window.outerHeight;
+    let storedInnerHeight = window.innerHeight;
+    
+    try {
+        Object.defineProperty(window, 'outerHeight', {
+            get: () => storedOuterHeight || screen.height,
+            set: (val) => { storedOuterHeight = val; }
+        });
+        Object.defineProperty(window, 'outerWidth', {
+            get: () => window.innerWidth || screen.width
+        });
+    } catch (e) {}
+    
+    // Block devtools detection via console.log timing
+    const noop = () => {};
+    const fakeConsole = {
+        log: noop, debug: noop, info: noop, warn: noop, error: noop,
+        dir: noop, dirxml: noop, table: noop, trace: noop, group: noop,
+        groupCollapsed: noop, groupEnd: noop, clear: noop, count: noop,
+        countReset: noop, assert: noop, profile: noop, profileEnd: noop,
+        time: noop, timeLog: noop, timeEnd: noop, timeStamp: noop
+    };
+    
+    try {
+        Object.keys(fakeConsole).forEach(key => {
+            if (console[key]) {
+                const original = console[key];
+                console[key] = function(...args) {
+                    try {
+                        original.apply(console, args);
+                    } catch (e) {}
+                };
+            }
+        });
+    } catch (e) {}
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 4: Debugger Statement Protection
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    // Override Function constructor to strip debugger statements
+    const OriginalFunction = window.Function;
+    window.Function = function(...args) {
+        const code = args[args.length - 1] || '';
+        const sanitized = typeof code === 'string' ? code.replace(/debugger/gi, '') : code;
+        args[args.length - 1] = sanitized;
+        return OriginalFunction.apply(this, args);
+    };
+    window.Function.prototype = OriginalFunction.prototype;
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 5: Function toString() Protection
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    const originalToString = Function.prototype.toString;
+    Function.prototype.toString = function() {
+        if (this === window.Function) {
+            return 'function Function() { [native code] }';
+        }
+        return originalToString.call(this);
+    };
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 6: Navigator Properties
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    if (CONFIG.platform) {
+        try {
+            Object.defineProperty(navigator, 'platform', {
+                get: () => CONFIG.platform,
+                configurable: true
+            });
+        } catch (e) {}
+    }
+    
+    if (CONFIG.vendor) {
+        try {
+            Object.defineProperty(navigator, 'vendor', {
+                get: () => CONFIG.vendor,
+                configurable: true
+            });
+        } catch (e) {}
+    }
+    
+    if (CONFIG.locale) {
+        try {
+            Object.defineProperty(navigator, 'language', {
+                get: () => CONFIG.locale,
+                configurable: true
+            });
+            Object.defineProperty(navigator, 'languages', {
+                get: () => [CONFIG.locale, CONFIG.locale.split('-')[0]],
+                configurable: true
+            });
+        } catch (e) {}
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 7: Permissions API
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    if (navigator.permissions && navigator.permissions.query) {
+        const originalQuery = navigator.permissions.query;
+        navigator.permissions.query = function(params) {
+            if (params.name === 'notifications') {
+                return Promise.resolve({ state: 'prompt', name: 'notifications' });
+            }
+            return originalQuery.call(this, params);
+        };
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 8: Plugin Array
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    try {
+        Object.defineProperty(navigator, 'plugins', {
+            get: () => [
+                { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+                { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: 'Portable Document Format' },
+                { name: 'Native Client', filename: 'internal-nacl-plugin', description: 'Native Client Executable' }
+            ],
+            configurable: true
+        });
+    } catch (e) {}
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 9: iframe Detection Blocking
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    try {
+        Object.defineProperty(window, 'self', {
+            get: () => window,
+            configurable: false
+        });
+        Object.defineProperty(window, 'top', {
+            get: () => window,
+            configurable: false
+        });
+    } catch (e) {}
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 10: Performance Timing Normalization
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    if (window.performance && window.performance.timing) {
+        try {
+            const timing = window.performance.timing;
+            const now = Date.now();
+            Object.defineProperty(window.performance, 'timing', {
+                get: () => ({
+                    ...timing,
+                    navigationStart: now - 2000,
+                    fetchStart: now - 1500,
+                    domainLookupStart: now - 1400,
+                    domainLookupEnd: now - 1300,
+                    connectStart: now - 1200,
+                    connectEnd: now - 1100,
+                    requestStart: now - 1000,
+                    responseStart: now - 800,
+                    responseEnd: now - 600,
+                    domLoading: now - 500,
+                    domComplete: now - 100,
+                    loadEventEnd: now
+                }),
+                configurable: true
+            });
+        } catch (e) {}
+    }
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 11: Error Stack Trace Sanitization
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    const OriginalError = window.Error;
+    window.Error = function(...args) {
+        const err = new OriginalError(...args);
+        if (err.stack) {
+            err.stack = err.stack
+                .replace(/\\/g, '/')
+                .replace(/playwright/gi, 'chrome')
+                .replace(/automation/gi, 'extension');
+        }
+        return err;
+    };
+    window.Error.prototype = OriginalError.prototype;
+    
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MEDIUM LAYER 12: Date.now() Jitter (prevent timing attacks)
+    // ═══════════════════════════════════════════════════════════════════════════
+    
+    const OriginalDate = window.Date;
+    const OriginalDateNow = Date.now;
+    let timeOffset = Math.random() * 20 - 10; // ±10ms jitter
+    
+    Date.now = function() {
+        return OriginalDateNow() + timeOffset;
+    };
+    
+})();
+`
+}
+
 // All exports are named - use individual imports:
-// import { getAntiDetectionScript, getLightweightAntiDetectionScript, getTimezoneScript } from './AntiDetectionScripts'
+// import { getAntiDetectionScript, getLightweightAntiDetectionScript, getMediumAntiDetectionScript, getTimezoneScript } from './AntiDetectionScripts'

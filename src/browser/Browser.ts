@@ -8,6 +8,7 @@ import { updateFingerprintUserAgent } from "../util/browser/UserAgent";
 import {
     getAntiDetectionScript,
     getLightweightAntiDetectionScript,
+    getMediumAntiDetectionScript,
     getTimezoneScript,
 } from "../util/security/AntiDetectionScripts";
 import {
@@ -255,10 +256,11 @@ export class Browser {
     const locale = antiDetectConfig.locale || "en-US";
     const languages = antiDetectConfig.languages || ["en-US", "en"];
 
-    // Generate BOTH lightweight and comprehensive anti-detection scripts
-    const lightweightScript = getLightweightAntiDetectionScript({
+    // Generate BOTH medium and comprehensive anti-detection scripts
+    const mediumScript = getMediumAntiDetectionScript({
       platform: this.bot.isMobile ? "Android" : "Win32",
       vendor: "Google Inc.",
+      locale,
     });
 
     const comprehensiveScript = getAntiDetectionScript({
@@ -278,7 +280,7 @@ export class Browser {
     try {
       context.on("page", async (page) => {
         try {
-          // SMART DETECTION: Use lightweight scripts for tracking/non-critical pages
+          // SMART DETECTION: Use medium scripts for tracking/non-critical pages
           // and comprehensive protection for Microsoft domains
           const smartAntiDetectScript = `
 (function() {
@@ -292,9 +294,9 @@ export class Browser {
                            url.includes('live.com') ||
                            url.includes('login.microsoftonline.com');
     
-    // For tracking sites, use ONLY lightweight protection (fast load, no JS blocking)
+    // For tracking sites, use MEDIUM protection (defeats disable-devtool, fast load)
     if (isTrackingSite && !isMicrosoftSite) {
-        ${lightweightScript}
+        ${mediumScript}
     } else {
         // For Microsoft sites, use comprehensive 23-layer protection
         ${comprehensiveScript}
@@ -432,7 +434,7 @@ export class Browser {
           this.bot.log(
             this.bot.isMobile,
             "BROWSER",
-            `Page configured with smart anti-detection (lightweight for tracking sites, 23-layer for Microsoft) + TLS/HTTP2 protection`,
+            `Page configured with smart anti-detection (12-layer medium for tracking sites, 23-layer for Microsoft) + TLS/HTTP2 protection`,
           );
         } catch (e) {
           this.bot.log(
