@@ -346,6 +346,18 @@ export class BrowserFunc {
 
         await this.bot.utils.wait(2000);
       }
+
+      // CRITICAL FIX: After max retries, throw error if activities still not found
+      // This prevents infinite retry loops by properly failing after exhausting all attempts
+      throw new Error(
+        `Failed to find activities after ${RETRY_LIMITS.GO_HOME_MAX} retry attempts. ` +
+          `Possible causes: ` +
+          `1) Account has no available activities today (check manually at ${baseURL}), ` +
+          `2) Microsoft Rewards page structure changed - update bot to latest version, ` +
+          `3) Network/regional issues preventing full page load, ` +
+          `4) Account may be flagged/restricted by Microsoft (check account status manually), ` +
+          `5) Anti-bot detection - try enabling humanization or running manually to verify.`,
+      );
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);

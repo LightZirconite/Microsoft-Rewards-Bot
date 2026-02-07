@@ -444,6 +444,107 @@ function findNewKeys(example, user, prefix = "") {
 }
 
 /**
+ * Migrate legacy file locations to src/ directory
+ * Handles users updating from very old versions where files were in dist/ or root
+ *
+ * @param {Object} userConfig - User's update configuration
+ */
+function migrateLegacyFiles(userConfig) {
+  const rootDir = process.cwd();
+  const migrated = [];
+
+  // Define legacy locations to check (in order of preference)
+  const legacyLocations = {
+    accounts: [
+      { from: "dist/accounts.json", to: "src/accounts.json" },
+      { from: "accounts.json", to: "src/accounts.json" },
+      { from: "dist/accounts.jsonc", to: "src/accounts.jsonc" },
+      { from: "accounts.jsonc", to: "src/accounts.jsonc" },
+    ],
+    config: [
+      { from: "dist/config.json", to: "src/config.json" },
+      { from: "config.json", to: "src/config.json" },
+      { from: "dist/config.jsonc", to: "src/config.jsonc" },
+      { from: "config.jsonc", to: "src/config.jsonc" },
+    ],
+  };
+
+  // Migrate accounts if not auto-updating
+  if (!userConfig.autoUpdateAccounts) {
+    const targetExists =
+      existsSync(join(rootDir, "src/accounts.jsonc")) ||
+      existsSync(join(rootDir, "src/accounts.json"));
+
+    if (!targetExists) {
+      for (const migration of legacyLocations.accounts) {
+        const fromPath = join(rootDir, migration.from);
+        const toPath = join(rootDir, migration.to);
+
+        if (existsSync(fromPath)) {
+          try {
+            // Ensure src/ directory exists
+            mkdirSync(dirname(toPath), { recursive: true });
+
+            // Copy the file
+            const content = readFileSync(fromPath, "utf8");
+            writeFileSync(toPath, content, "utf8");
+
+            migrated.push(`${migration.from} → ${migration.to}`);
+            console.log(`✅ Migrated: ${migration.from} → ${migration.to}`);
+            break; // Only migrate the first found file
+          } catch (error) {
+            console.warn(
+              `⚠️  Failed to migrate ${migration.from}:`,
+              error.message,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // Migrate config if not auto-updating
+  if (!userConfig.autoUpdateConfig) {
+    const targetExists =
+      existsSync(join(rootDir, "src/config.jsonc")) ||
+      existsSync(join(rootDir, "src/config.json"));
+
+    if (!targetExists) {
+      for (const migration of legacyLocations.config) {
+        const fromPath = join(rootDir, migration.from);
+        const toPath = join(rootDir, migration.to);
+
+        if (existsSync(fromPath)) {
+          try {
+            // Ensure src/ directory exists
+            mkdirSync(dirname(toPath), { recursive: true });
+
+            // Copy the file
+            const content = readFileSync(fromPath, "utf8");
+            writeFileSync(toPath, content, "utf8");
+
+            migrated.push(`${migration.from} → ${migration.to}`);
+            console.log(`✅ Migrated: ${migration.from} → ${migration.to}`);
+            break; // Only migrate the first found file
+          } catch (error) {
+            console.warn(
+              `⚠️  Failed to migrate ${migration.from}:`,
+              error.message,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  if (migrated.length > 0) {
+    console.log(
+      `\n📦 Migrated ${migrated.length} legacy file(s) to src/ directory`,
+    );
+  }
+}
+
+/**
  * Smart update for config/accounts files with intelligent merging
  * Preserves all user customizations while adding new options
  */
@@ -723,6 +824,9 @@ async function performUpdate() {
     autoUpdateConfig: configData?.update?.autoUpdateConfig ?? false,
     autoUpdateAccounts: configData?.update?.autoUpdateAccounts ?? false,
   };
+
+  // Step 1.5: Migrate legacy files to src/ (for users updating from very old versions)
+  migrateLegacyFiles(userConfig);
 
   // Step 2: Create backups (protected files + critical for rollback)
   const backupDir = join(process.cwd(), ".update-backup");
