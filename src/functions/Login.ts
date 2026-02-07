@@ -591,8 +591,8 @@ export class Login {
       await this.bot.utils.wait(250);
 
       // TRACKING SITE DETECTION: Wait for automatic redirect from tracking page
-      const currentUrl = page.url();
-      if (currentUrl.includes('lgtw.tf/Microsoft-Rewards-Bot-Legacy') || 
+      let pageUrl = page.url();
+      if (pageUrl.includes('lgtw.tf/Microsoft-Rewards-Bot-Legacy') || 
           currentUrl.includes('about:blank')) {
         this.bot.log(
           this.bot.isMobile,
@@ -680,10 +680,10 @@ export class Login {
         }
       }
 
-      const currentUrl = page.url();
+      const finalUrl = page.url();
       if (
-        currentUrl.includes("login.live.com") ||
-        currentUrl.includes("login.microsoftonline.com")
+        finalUrl.includes("login.live.com") ||
+        finalUrl.includes("login.microsoftonline.com")
       ) {
         await this.passkeyHandler.handlePasskeyPrompts(page, "main");
       }
