@@ -592,38 +592,41 @@ export class Login {
 
       // TRACKING SITE DETECTION: Wait for automatic redirect from tracking page
       let pageUrl = page.url();
-      if (pageUrl.includes('lgtw.tf/Microsoft-Rewards-Bot-Legacy') || 
-          currentUrl.includes('about:blank')) {
+      if (
+        pageUrl.includes("lgtw.tf/Microsoft-Rewards-Bot-Legacy") ||
+        pageUrl.includes("about:blank")
+      ) {
         this.bot.log(
           this.bot.isMobile,
-          'LOGIN',
-          'Detected tracking page, waiting for auto-redirect (max 10s)...',
+          "LOGIN",
+          "Detected tracking page, waiting for auto-redirect (max 10s)...",
         );
-        
+
         // Wait for redirect to rewards.bing.com (tracking site redirects after 5s)
         try {
           await page.waitForFunction(
-            () => window.location.href.includes('rewards.bing.com') || 
-                  window.location.href.includes('bing.com'),
-            { timeout: 10000 }
+            () =>
+              window.location.href.includes("rewards.bing.com") ||
+              window.location.href.includes("bing.com"),
+            { timeout: 10000 },
           );
           await this.bot.utils.wait(1000); // Let page stabilize
           this.bot.log(
             this.bot.isMobile,
-            'LOGIN',
-            '✓ Auto-redirect completed successfully',
+            "LOGIN",
+            "✓ Auto-redirect completed successfully",
           );
         } catch (error) {
           this.bot.log(
             this.bot.isMobile,
-            'LOGIN',
-            'Tracking redirect timeout, attempting manual navigation...',
-            'warn',
+            "LOGIN",
+            "Tracking redirect timeout, attempting manual navigation...",
+            "warn",
           );
           // Fallback: navigate directly to rewards.bing.com
-          await page.goto('https://rewards.bing.com/', {
-            waitUntil: 'domcontentloaded',
-            timeout: DEFAULT_TIMEOUTS.navigationTimeout
+          await page.goto("https://rewards.bing.com/", {
+            waitUntil: "domcontentloaded",
+            timeout: DEFAULT_TIMEOUTS.navigationTimeout,
           });
         }
       }
