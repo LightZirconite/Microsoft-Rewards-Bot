@@ -81,7 +81,7 @@ function removeTrailingCommas(input: string): string {
   // - ,} or ,]
   // - , } or , ]
   // - ,\n} or ,\n]
-  return input.replace(/,(\s*[}\]])/g, '$1');
+  return input.replace(/,(\s*[}\]])/g, "$1");
 }
 
 // Normalize both legacy (flat) and new (nested) config schemas into the flat Config interface
