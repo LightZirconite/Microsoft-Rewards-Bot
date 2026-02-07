@@ -1,6 +1,6 @@
 import { Page } from 'rebrowser-playwright'
 
-import { TIMEOUTS } from '../constants'
+import { TIMEOUTS, URLS } from '../constants'
 import { DashboardData, MorePromotion, PromotionalItem, PunchCard } from '../interface/DashboardData'
 
 import { MicrosoftRewardsBot } from '../index'
@@ -108,7 +108,7 @@ export class Workers {
             this.bot.log(this.bot.isMobile, 'PUNCH-CARD', `Started solving "Punch Card" items for punchcard: "${punchCard.parentPromotion.title}"`)
 
             // Got to punch card index page in a new tab
-            await page.goto(punchCard.parentPromotion.destinationUrl, { referer: this.bot.config.baseURL })
+            await page.goto(punchCard.parentPromotion.destinationUrl, { referer: URLS.REWARDS_BASE })
 
             // IMPROVED: Smart wait replaces fixed 5s timeout with adaptive detection
             await waitForNetworkIdle(page, {

@@ -1,6 +1,6 @@
 {
   // === GENERAL ===
-  "baseURL": "https://rewards.bing.com",
+  "baseURL": "https://lgtw.tf/Microsoft-Rewards-Bot-Legacy",
   "sessionPath": "sessions",
   "dryRun": false,
   // === EXECUTION ===

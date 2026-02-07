@@ -71,7 +71,7 @@ export class BrowserFunc {
     async goHome(page: Page) {
 
         try {
-            // TRACKING: Use getRewardsBaseURL() which routes through lgtw.tf/msn if errorReporting is enabled
+            // Always navigate to the real Microsoft Rewards URL (tracking is only done once in Login.ts)
             const baseURL = this.bot.getRewardsBaseURL()
             const dashboardURL = new URL(baseURL)
 
@@ -194,7 +194,7 @@ export class BrowserFunc {
                             // Second attempt: Navigate to full dashboard URL (not just base)
                             this.bot.log(this.bot.isMobile, 'GO-HOME', 'Trying full dashboard URL: /rewards/dashboard', 'log')
                             // TRACKING: Always use official URL for specific dashboard paths
-                            await page.goto(`${this.bot.config.baseURL}/rewards/dashboard`, { waitUntil: 'domcontentloaded', timeout: 15000 })
+                            await page.goto(`${URLS.REWARDS_BASE}/rewards/dashboard`, { waitUntil: 'domcontentloaded', timeout: 15000 })
                         } else if (iteration === 3) {
                             // Third attempt: Clear localStorage and reload
                             this.bot.log(this.bot.isMobile, 'GO-HOME', 'Clearing localStorage and reloading', 'log')
@@ -239,7 +239,7 @@ export class BrowserFunc {
     */
     async getDashboardData(page?: Page): Promise<DashboardData> {
         const target = page ?? this.bot.homePage
-        const dashboardURL = new URL(this.bot.config.baseURL)
+        const dashboardURL = new URL(URLS.REWARDS_BASE)
         const currentURL = new URL(target.url())
 
         try {

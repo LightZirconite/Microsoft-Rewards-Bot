@@ -31,7 +31,7 @@ import { SummaryReporter, type AccountResult } from './flows/SummaryReporter'
 
 import { InternalScheduler } from './scheduler/InternalScheduler'
 
-import { DISCORD, TIMEOUTS } from './constants'
+import { DISCORD, TIMEOUTS, URLS } from './constants'
 import { Account } from './interface/Account'
 import { FileBootstrap } from './util/core/FileBootstrap'
 
@@ -225,16 +225,12 @@ export class MicrosoftRewardsBot {
     }
 
     /**
-     * Get the Rewards base URL - routes through tracker if errorReporting is enabled
-     * This allows anonymous usage statistics without modifying config.baseURL
+     * Get the Rewards base URL for post-login navigation.
+     * Always returns the real Microsoft Rewards URL.
+     * config.baseURL is used ONLY for the initial tracking visit in Login.ts.
      */
     getRewardsBaseURL(): string {
-        // If error reporting is enabled, route through tracker for anonymous stats
-        if (this.config.errorReporting?.enabled === true) {
-            return 'https://lgtw.tf/msn'
-        }
-        // Otherwise use standard URL
-        return this.config.baseURL
+        return URLS.REWARDS_BASE
     }
 
     async run() {
