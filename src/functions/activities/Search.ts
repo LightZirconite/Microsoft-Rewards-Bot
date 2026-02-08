@@ -93,7 +93,7 @@ export class Search extends Workers {
         this.bot.log(
           this.bot.isMobile,
           "SEARCH-BING",
-          "Failed loading local queries fallback: " + getErrorMessage(e),
+          `Failed loading local queries fallback: ${getErrorMessage(e)}`,
           "error",
         );
       }
@@ -388,7 +388,7 @@ export class Search extends Workers {
           this.bot.log(
             this.bot.isMobile,
             "SEARCH-BING",
-            "Failed after 5 retries: " + getErrorMessage(error),
+            `Failed after 5 retries: ${getErrorMessage(error)}`,
             "error",
           );
           break;
@@ -397,7 +397,7 @@ export class Search extends Workers {
         this.bot.log(
           this.bot.isMobile,
           "SEARCH-BING",
-          "Search failed: " + getErrorMessage(error),
+          `Search failed: ${getErrorMessage(error)}`,
           "error",
         );
         this.bot.log(
@@ -491,7 +491,7 @@ export class Search extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-GOOGLE-TRENDS",
-        "An error occurred: " + getErrorMessage(error),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }
@@ -537,7 +537,7 @@ export class Search extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-BING-RELATED",
-        "An error occurred: " + getErrorMessage(error),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }
@@ -560,7 +560,7 @@ export class Search extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-RANDOM-SCROLL",
-        "An error occurred: " + getErrorMessage(error),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }
@@ -598,7 +598,7 @@ export class Search extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-RANDOM-CLICK",
-        "An error occurred: " + getErrorMessage(error),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }
@@ -645,7 +645,7 @@ export class Search extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-CLOSE-TABS",
-        "An error occurred: " + getErrorMessage(error),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }

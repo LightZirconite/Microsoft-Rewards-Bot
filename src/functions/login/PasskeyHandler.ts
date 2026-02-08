@@ -189,7 +189,7 @@ export class PasskeyHandler {
                 ),
               );
             did = true;
-            this.logPasskeyOnce("title heuristic " + title);
+            this.logPasskeyOnce(`title heuristic ${title}`);
           }
         }
       }

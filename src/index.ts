@@ -1385,7 +1385,7 @@ async function main(): Promise<void> {
       log(
         "main",
         "DASHBOARD",
-        "Could not load accounts: " + getErrorMessage(error),
+        `Could not load accounts: ${getErrorMessage(error)}`,
         "warn",
       );
     }
@@ -1635,7 +1635,7 @@ async function main(): Promise<void> {
                   log(
                     "main",
                     "MAIN-ERROR",
-                    "Fatal after update: " + getErrorMessage(e),
+                    `Fatal after update: ${getErrorMessage(e)}`,
                     "error",
                   );
                   process.exit(1);
@@ -1753,7 +1753,7 @@ async function main(): Promise<void> {
       log(
         "main",
         "MAIN-ERROR",
-        "Fatal during run: " + getErrorMessage(e),
+        `Fatal during run: ${getErrorMessage(e)}`,
         "error",
       );
       gracefulExit(1);

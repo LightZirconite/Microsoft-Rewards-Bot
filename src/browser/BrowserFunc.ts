@@ -806,7 +806,7 @@ export class BrowserFunc {
 
           if (checkInDay < 6 && today.getDate() !== lastUpdated.getDate()) {
             points.checkIn = parseInt(
-              item.attributes["day_" + (checkInDay + 1) + "_points"] ?? "",
+              item.attributes[`day_${checkInDay + 1}_points`] ?? "",
               10,
             );
           }
@@ -1004,7 +1004,7 @@ export class BrowserFunc {
       this.bot.log(
         this.bot.isMobile,
         "QUIZ-REFRESH",
-        "An error occurred: " + getErrorMessage(error),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
       return false;
@@ -1061,7 +1061,7 @@ export class BrowserFunc {
       this.bot.log(
         this.bot.isMobile,
         "GET-PUNCHCARD-ACTIVITY",
-        "An error occurred: " + getErrorMessage(error),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }

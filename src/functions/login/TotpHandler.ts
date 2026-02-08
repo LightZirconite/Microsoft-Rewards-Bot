@@ -102,7 +102,7 @@ export class TotpHandler {
       }
       await this.handleSMSOrTotp(page);
     } catch (e) {
-      this.bot.log(this.bot.isMobile, "LOGIN", "2FA error: " + e, "warn");
+      this.bot.log(this.bot.isMobile, "LOGIN", `2FA error: ${getErrorMessage(e)}`, "warn");
     }
   }
 
@@ -339,7 +339,7 @@ export class TotpHandler {
       this.bot.log(
         this.bot.isMobile,
         "LOGIN",
-        "2FA code entry error: " + getErrorMessage(error),
+        `2FA code entry error: ${getErrorMessage(error)}`,
         "warn",
       );
     } finally {
@@ -433,7 +433,7 @@ export class TotpHandler {
       this.bot.log(
         this.bot.isMobile,
         "LOGIN",
-        "Failed to submit TOTP automatically: " + getErrorMessage(error),
+        `Failed to submit TOTP automatically: ${getErrorMessage(error)}`,
         "warn",
       );
     }

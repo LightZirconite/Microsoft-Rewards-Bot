@@ -347,7 +347,7 @@ export class Login {
       this.bot.log(
         this.bot.isMobile,
         "LOGIN",
-        `Failed login: ${errorMessage}${stackTrace ? "\nStack: " + stackTrace.split("\n").slice(0, 3).join(" | ") : ""}`,
+        `Failed login: ${errorMessage}${stackTrace ? `\nStack: ${stackTrace.split("\n").slice(0, 3).join(" | ")}` : ""}`,
         "error",
       );
       throw new Error(`Login failed for ${email}: ${errorMessage}`);

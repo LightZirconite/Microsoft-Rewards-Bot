@@ -111,7 +111,7 @@ export async function getChromeVersion(isMobile: boolean): Promise<string> {
     throw log(
       isMobile,
       "USERAGENT-CHROME-VERSION",
-      "An error occurred: " + getErrorMessage(error),
+      `An error occurred: ${getErrorMessage(error)}`,
       "error",
     );
   }

@@ -160,7 +160,7 @@ npm run lint:fix       # Auto-fix linting issues
 | ----------------- | ----------------- | --------------------- | --------------- | ------------------------------------------------------------------------- |
 | **V4** (Main)     | ✅ New Interface  | 🔥 Active Development | **Recommended** | [Try V4](https://github.com/LightZirconite/Microsoft-Rewards-Bot/tree/v4) |
 | **Legacy** (This) | ✅ Old Interface  | ⚠️ Maintenance Only   | Stable          | Current branch                                                            |
-| **TheNetsky V3**  | ✅ Old Interface  | ✅    Updates         | Stable         | [View](https://github.com/TheNetsky/Microsoft-Rewards-Script/tree/v3)     |
+| **TheNetsky V3**  | ✅ Old Interface  | ✅ Updates            | Stable          | [View](https://github.com/TheNetsky/Microsoft-Rewards-Script/tree/v3)     |
 
 **When to use Legacy:**
 
@@ -184,21 +184,21 @@ Compared to the original TheNetsky fork, both Legacy and V3 include:
 
 Compared to the original TheNetsky fork, both Legacy and V3 include:
 
-| Feature                   | LightZirconite (Legacy/V3)  | TheNetsky Original |
-| ------------------------- | :-------------------------: | :----------------: |
-| **Real-Time Dashboard**   |    ✅ WebSocket-based UI    |         ✅ Cron   |
-| **Built-in Scheduler**    |    ✅ Cron + jitter + TZ    |  ⚠️ External only  |
-| **Job State System**      |  ✅ Resume + skip + passes  |         ❌         |
-| **Config Auto-Merge**     | ✅ Preserves customizations |         ❌         |
-| **Account Creator**       |     ✅ Automated (BETA)     |         ❌         |
-| **Vacation Mode**         |     ✅ Random off-days      |         ❌         |
-| **Risk Management**       |   ✅ Adaptive throttling    |         ❌         |
-| **Compromised Recovery**  |   ✅ Security prompt auto   |         ❌         |
-| **Error Reporting**       |  ✅ Anonymous auto-reports  |         ❌         |
-| **Query Diversity**       | Google Trends, Reddit, News |   Google Trends/Local |
-| **Anti-Detection Layers** |      23 active layers       |     ~15 layers     |
-| **Comprehensive Docs**    |     ✅ 10+ guide pages      |     ⚠️ Limited     |
-| **One-Command Setup**     |       ✅ `npm start`        |  ⚠️ Manual steps   |
+| Feature                   | LightZirconite (Legacy/V3)  | TheNetsky Original  |
+| ------------------------- | :-------------------------: | :-----------------: |
+| **Real-Time Dashboard**   |    ✅ WebSocket-based UI    |       ✅ Cron       |
+| **Built-in Scheduler**    |    ✅ Cron + jitter + TZ    |  ⚠️ External only   |
+| **Job State System**      |  ✅ Resume + skip + passes  |         ❌          |
+| **Config Auto-Merge**     | ✅ Preserves customizations |         ❌          |
+| **Account Creator**       |     ✅ Automated (BETA)     |         ❌          |
+| **Vacation Mode**         |     ✅ Random off-days      |         ❌          |
+| **Risk Management**       |   ✅ Adaptive throttling    |         ❌          |
+| **Compromised Recovery**  |   ✅ Security prompt auto   |         ❌          |
+| **Error Reporting**       |  ✅ Anonymous auto-reports  |         ❌          |
+| **Query Diversity**       | Google Trends, Reddit, News | Google Trends/Local |
+| **Anti-Detection Layers** |      23 active layers       |     ~15 layers      |
+| **Comprehensive Docs**    |     ✅ 10+ guide pages      |     ⚠️ Limited      |
+| **One-Command Setup**     |       ✅ `npm start`        |   ⚠️ Manual steps   |
 
 ### Migration from TheNetsky
 
@@ -222,9 +222,7 @@ npm start
 ## 📦 Backup Repository
 
 In case the main repository is unavailable:  
-🔗 **[git.justw.tf/LightZirconite/Microsoft-Rewards-Bot](https://git.justw.tf/LightZirconite/Microsoft-Rewards-Bot)** (Legacy branch)
-
-For V4: [Main branch backup](https://git.justw.tf/LightZirconite/Microsoft-Rewards-Bot/src/branch/main)
+🔗 **[git.justw.tf/LightZirconite/Microsoft-Rewards-Bot](https://git.justw.tf/LightZirconite/Microsoft-Rewards-Bot)**
 
 ---
 

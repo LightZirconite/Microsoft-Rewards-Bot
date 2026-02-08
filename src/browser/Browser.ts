@@ -382,10 +382,8 @@ export class Browser {
 
             // Also remove PublicKeyCredential if it exists
             if (window.PublicKeyCredential) {
-              // @ts-ignore - Override isUserVerifyingPlatformAuthenticatorAvailable
               window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable =
                 async () => false;
-              // @ts-ignore - Override isConditionalMediationAvailable
               window.PublicKeyCredential.isConditionalMediationAvailable =
                 async () => false;
             }

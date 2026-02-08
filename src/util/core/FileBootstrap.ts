@@ -80,7 +80,7 @@ export class FileBootstrap {
 
     if (configResult.success && configResult.changes.length > 0) {
       configChanged = true;
-      messages.push("📝 Configuration: " + configResult.changes.join(", "));
+      messages.push(`📝 Configuration: ${configResult.changes.join(", ")}`);
     }
 
     // Merge accounts.jsonc
@@ -91,7 +91,7 @@ export class FileBootstrap {
 
     if (accountsResult.success && accountsResult.changes.length > 0) {
       accountsChanged = true;
-      messages.push("📝 Accounts: " + accountsResult.changes.join(", "));
+      messages.push(`📝 Accounts: ${accountsResult.changes.join(", ")}`);
     }
 
     return { configChanged, accountsChanged, messages };
@@ -164,7 +164,7 @@ export class FileBootstrap {
       return;
     }
 
-    console.log("\n" + "=".repeat(70));
+    console.log(`\n${"=".repeat(70)}`);
     console.log("🎉  FIRST-TIME SETUP COMPLETE");
     console.log("=".repeat(70));
     console.log("\nThe following files have been created for you:");
@@ -177,7 +177,7 @@ export class FileBootstrap {
     console.log("  1. Edit src/accounts.jsonc to add your Microsoft accounts");
     console.log("  2. (Optional) Customize src/config.jsonc settings");
     console.log("  3. Run the bot again with: npm start");
-    console.log("\n" + "=".repeat(70) + "\n");
+    console.log(`\n${"=".repeat(70)}\n`);
   }
 
   /**

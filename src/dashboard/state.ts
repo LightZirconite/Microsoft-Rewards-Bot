@@ -136,7 +136,7 @@ class DashboardState {
 
     const domainParts = domain.split('.')
     const tld = domainParts.pop() || 'com'
-    const maskedDomain = domain.length <= 4 ? '***.' + tld : domain.slice(0, 2) + '***.' + tld
+    const maskedDomain = domain.length <= 4 ? `***.${tld}` : `${domain.slice(0, 2)}***.${tld}`
 
     return `${maskedLocal}@${maskedDomain}`
   }
