@@ -1,4 +1,4 @@
-export type BanStatus = { status: boolean; reason: string };
+type BanStatus = { status: boolean; reason: string };
 
 // IMPROVED: Expanded ban detection patterns for better early warning
 const BAN_PATTERNS: Array<{ re: RegExp; reason: string }> = [

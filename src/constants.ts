@@ -3,72 +3,6 @@
  * All timeouts, retry limits, delays, selectors, and other magic numbers are defined here
  */
 
-/**
- * Parse environment variable as number with validation
- * @param key Environment variable name
- * @param defaultValue Default value if parsing fails or out of range
- * @param min Minimum allowed value
- * @param max Maximum allowed value
- * @returns Parsed number or default value
- */
-function parseEnvNumber(
-  key: string,
-  defaultValue: number,
-  min: number,
-  max: number,
-): number {
-  const raw = process.env[key];
-  if (!raw) return defaultValue;
-
-  const parsed = Number(raw);
-  if (!Number.isFinite(parsed)) {
-    queueMicrotask(() => {
-      import("./util/notifications/Logger")
-        .then(({ log }) => {
-          log(
-            "main",
-            "CONSTANTS",
-            `Invalid ${key}="${raw}" (not a finite number), using default: ${defaultValue}`,
-            "warn",
-          );
-        })
-        .catch(() => {
-          process.stderr.write(
-            `[Constants] Invalid ${key}="${raw}" (not a finite number), using default: ${defaultValue}\n`,
-          );
-        });
-    });
-    return defaultValue;
-  }
-
-  if (parsed < min || parsed > max) {
-    queueMicrotask(() => {
-      import("./util/notifications/Logger")
-        .then(({ log }) => {
-          log(
-            "main",
-            "CONSTANTS",
-            `${key}=${parsed} out of range [${min}, ${max}], using default: ${defaultValue}`,
-            "warn",
-          );
-        })
-        .catch(() => {
-          process.stderr.write(
-            `[Constants] ${key}=${parsed} out of range [${min}, ${max}], using default: ${defaultValue}\n`,
-          );
-        });
-    });
-    return defaultValue;
-  }
-
-  return parsed;
-}
-
-// Login timeout boundaries (in milliseconds)
-const LOGIN_TIMEOUT_MIN_MS = 30000; // 30 seconds - minimum login wait
-const LOGIN_TIMEOUT_MAX_MS = 600000; // 10 minutes - maximum login wait
-const LOGIN_TIMEOUT_DEFAULT_MS = 180000; // 3 minutes - default login timeout
-
 export const TIMEOUTS = {
   SHORT: 500,
   ONE_SECOND: 1000,
@@ -80,38 +14,18 @@ export const TIMEOUTS = {
   ACTIVITY_PAGE_LOAD: 4000, // Standard wait after activity interactions (LONG + 1s buffer)
   SMART_WAIT_EXTENDED: 8000, // Extended smart-wait timeout for page transitions
   DASHBOARD_WAIT: 10000,
-  LOGIN_MAX: parseEnvNumber(
-    "LOGIN_MAX_WAIT_MS",
-    LOGIN_TIMEOUT_DEFAULT_MS,
-    LOGIN_TIMEOUT_MIN_MS,
-    LOGIN_TIMEOUT_MAX_MS,
-  ),
-  NETWORK_IDLE: 5000,
   ONE_MINUTE: 60000,
-  FIVE_MINUTES: 300000,
   TEN_MINUTES: 600000,
   ONE_HOUR: 3600000,
-  TWO_MINUTES: 120000,
 } as const;
 
 export const RETRY_LIMITS = {
-  MAX_ITERATIONS: 5,
-  DASHBOARD_RELOAD: 2,
-  MOBILE_SEARCH: 3,
   ABC_MAX: 15,
-  POLL_MAX: 15,
-  QUIZ_MAX: 15,
   QUIZ_ANSWER_TIMEOUT: 10000,
   GO_HOME_MAX: 5,
 } as const;
 
 export const DELAYS = {
-  ACTION_MIN: 1000,
-  ACTION_MAX: 3000,
-  SEARCH_DEFAULT_MIN: 2000,
-  SEARCH_DEFAULT_MAX: 5000,
-  BROWSER_CLOSE: 2000,
-  TYPING_DELAY: 20,
   SEARCH_ON_BING_WAIT: 5000,
   SEARCH_ON_BING_COMPLETE: 3000,
   SEARCH_ON_BING_FOCUS: 200,
@@ -147,7 +61,6 @@ export const URLS = {
   REWARDS_BASE: "https://rewards.bing.com",
   REWARDS_REDEEM: "https://rewards.bing.com/redeem",
   REWARDS_DASHBOARD: "https://www.bing.com/rewards/dashboard",
-  REWARDS_API_BASE: "https://prod.rewardsplatform.microsoft.com",
   REWARDS_API_ME: "https://prod.rewardsplatform.microsoft.com/dapi/me",
   REWARDS_API_ACTIVITIES:
     "https://prod.rewardsplatform.microsoft.com/dapi/me/activities",

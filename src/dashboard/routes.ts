@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express";
 import fs from "fs";
 import path from "path";
+import { getErrorMessage } from "../util/core/Utils";
 import { AccountHistory } from "../util/state/AccountHistory";
 import { getConfigPath, loadAccounts, loadConfig } from "../util/state/Load";
 import { botController } from "./BotController";
@@ -20,9 +21,8 @@ function getAccountHistory(): AccountHistory {
   return accountHistoryInstance;
 }
 
-// Helper to extract error message
-const getErr = (e: unknown): string =>
-  e instanceof Error ? e.message : "Unknown error";
+// Short alias for the centralized error message extractor
+const getErr = getErrorMessage;
 
 // Helper to load accounts if not already loaded
 function ensureAccountsLoaded(): void {

@@ -4,7 +4,7 @@ import {
     loadPointsFromJobState,
 } from "./SessionLoader";
 
-export interface DashboardStatus {
+interface DashboardStatus {
   running: boolean;
   lastRun?: string;
   currentAccount?: string;
@@ -20,7 +20,7 @@ export interface DashboardLog {
   message: string;
 }
 
-export interface AccountStatus {
+interface AccountStatus {
   email: string;
   maskedEmail: string;
   points?: number;

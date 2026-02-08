@@ -3,6 +3,7 @@
 ## Project Architecture
 
 ### Core Structure
+
 ```
 src/
 ├── index.ts                 # Main entry point, bot orchestration
@@ -27,29 +28,34 @@ src/
 ### Key Design Patterns
 
 #### 1. **Bot Class Pattern** (`index.ts`)
+
 - Main orchestrator with dependency injection
 - Manages lifecycle: initialize → run → cleanup
 - Supports cluster mode (multi-account parallel processing)
 - Implements crash recovery and graceful shutdown
 
 #### 2. **Flow Pattern** (`flows/`)
+
 - **DesktopFlow**: Desktop browser automation
-- **MobileFlow**: Mobile browser automation  
+- **MobileFlow**: Mobile browser automation
 - **SummaryReporter**: Centralized reporting system
 - Each flow is self-contained with error handling
 
 #### 3. **Activity Handler Pattern** (`functions/activities/`)
+
 - Each activity (Quiz, Poll, Search, etc.) is a separate class
 - Implements error recovery and retry logic
 - Uses human-like delays and behaviors
 
 #### 4. **State Management** (`util/state/`)
+
 - **JobState**: Persistent task completion tracking
 - **AccountHistory**: Historical data storage
 - **Load**: Configuration and account loading
 - Files use `.jsonc` format (JSON with comments)
 
 #### 5. **Dashboard Architecture** (`dashboard/`)
+
 - **Server**: Express server with WebSockets
 - **BotController**: Bot lifecycle management for dashboard
 - **StatsManager**: Persistent statistics tracking
@@ -63,41 +69,45 @@ src/
 ### 1. **Configuration Files**
 
 **IMPORTANT**: Files use `.example.jsonc` templates:
+
 - `src/config.example.jsonc` → `src/config.jsonc`
 - `src/accounts.example.jsonc` → `src/accounts.jsonc`
 - Auto-copied on first run by `FileBootstrap.ts`
 
 **Loading Order**:
+
 ```typescript
 // 1. Check multiple locations
 const candidates = [
-  'src/config.jsonc',
-  'config.jsonc',
-  'src/config.json'  // Legacy support
-]
+  "src/config.jsonc",
+  "config.jsonc",
+  "src/config.json", // Legacy support
+];
 
 // 2. Strip JSON comments
-const text = stripJsonComments(rawContent)
+const text = stripJsonComments(rawContent);
 
 // 3. Normalize schema (flat + nested support)
-const config = normalizeConfig(JSON.parse(text))
+const config = normalizeConfig(JSON.parse(text));
 ```
 
 ### 2. **Browser Automation**
 
 **Always use these utilities**:
+
 ```typescript
 // Humanized typing
-await this.browser.utils.humanType(page, selector, text)
+await this.browser.utils.humanType(page, selector, text);
 
 // Smart waits (handles stale elements)
-await this.browser.utils.smartWait(page, selector, { timeout: 30000 })
+await this.browser.utils.smartWait(page, selector, { timeout: 30000 });
 
 // Random gestures (anti-detection)
-await this.humanizer.randomGesture(page)
+await this.humanizer.randomGesture(page);
 ```
 
 **NEVER**:
+
 - Direct `page.type()` or `page.fill()`
 - Fixed delays (`await page.waitForTimeout(5000)`)
 - Hardcoded selectors without fallback
@@ -105,40 +115,42 @@ await this.humanizer.randomGesture(page)
 ### 3. **Error Handling**
 
 **Pattern to follow**:
+
 ```typescript
 try {
   // Attempt operation
-  await riskyOperation()
+  await riskyOperation();
 } catch (error) {
   // 1. Detect ban/security
-  const ban = detectBanReason(error)
+  const ban = detectBanReason(error);
   if (ban.status) {
-    await this.engageGlobalStandby(ban.reason, email)
-    throw error
+    await this.engageGlobalStandby(ban.reason, email);
+    throw error;
   }
-  
+
   // 2. Log with context
-  log(this.isMobile, 'MODULE', `Failed: ${getErrorMessage(error)}`, 'error')
-  
+  log(this.isMobile, "MODULE", `Failed: ${getErrorMessage(error)}`, "error");
+
   // 3. Retry or fail gracefully
   if (retryCount < MAX_RETRIES) {
-    await this.utils.wait(BACKOFF_MS)
-    return await retryOperation()
+    await this.utils.wait(BACKOFF_MS);
+    return await retryOperation();
   }
-  
-  throw error
+
+  throw error;
 }
 ```
 
 ### 4. **Logging System**
 
 **Use centralized logger**:
+
 ```typescript
-import { log } from '../util/notifications/Logger'
+import { log } from "../util/notifications/Logger";
 
 // Format: log(isMobile, source, message, level, color)
-log(false, 'SEARCH', 'Starting desktop searches', 'log', 'cyan')
-log(true, 'QUIZ', 'Quiz failed: timeout', 'error', 'red')
+log(false, "SEARCH", "Starting desktop searches", "log", "cyan");
+log(true, "QUIZ", "Quiz failed: timeout", "error", "red");
 ```
 
 **Levels**: `'log' | 'warn' | 'error'`  
@@ -147,18 +159,20 @@ log(true, 'QUIZ', 'Quiz failed: timeout', 'error', 'red')
 ### 5. **State Persistence**
 
 **Always use JobState for idempotency**:
+
 ```typescript
 // Check if already done
 if (this.accountJobState.isCompleted(email, activityKey)) {
-  log(mobile, 'ACTIVITY', `${activityKey} already completed`, 'warn')
-  return
+  log(mobile, "ACTIVITY", `${activityKey} already completed`, "warn");
+  return;
 }
 
 // Mark as completed after success
-this.accountJobState.markCompleted(email, activityKey)
+this.accountJobState.markCompleted(email, activityKey);
 ```
 
 **Activity Keys**:
+
 - `desktop-search`, `mobile-search`
 - `daily-set`, `more-promotions`, `punch-cards`
 - `read-to-earn`, `daily-check-in`
@@ -166,40 +180,42 @@ this.accountJobState.markCompleted(email, activityKey)
 ### 6. **Dashboard Integration**
 
 **Update dashboard state**:
+
 ```typescript
-import { dashboardState } from '../dashboard/state'
+import { dashboardState } from "../dashboard/state";
 
 // Update account status
 dashboardState.updateAccount(email, {
-  status: 'running', // 'idle' | 'running' | 'completed' | 'error'
-  errors: []
-})
+  status: "running", // 'idle' | 'running' | 'completed' | 'error'
+  errors: [],
+});
 
 // Add logs
 dashboardState.addLog({
   timestamp: new Date().toISOString(),
-  level: 'log',
-  platform: 'DESKTOP',
-  title: 'SEARCH',
-  message: 'Completed 30 searches'
-})
+  level: "log",
+  platform: "DESKTOP",
+  title: "SEARCH",
+  message: "Completed 30 searches",
+});
 ```
 
 ### 7. **Anti-Detection**
 
 **Mandatory humanization**:
+
 ```typescript
 // Random delays between actions
-await this.humanizer.randomDelay('search') // 2-5 seconds
+await this.humanizer.randomDelay("search"); // 2-5 seconds
 
 // Mouse movements
-await this.humanizer.randomGesture(page)
+await this.humanizer.randomGesture(page);
 
 // Scroll simulation
-await this.browser.utils.scrollRandomAmount(page)
+await this.browser.utils.scrollRandomAmount(page);
 
 // Click with human-like coordinates
-await this.browser.utils.humanClick(page, selector)
+await this.browser.utils.humanClick(page, selector);
 ```
 
 **CRITICAL**: Never disable humanization in production!
@@ -210,48 +226,56 @@ await this.browser.utils.humanClick(page, selector)
 
 ### Adding a New Activity
 
-1. **Create activity class**:
+1. **Create activity class** (extends `Workers`):
+
 ```typescript
 // src/functions/activities/NewActivity.ts
-import { ActivityHandler } from '../../interface/ActivityHandler'
+import { Page } from "rebrowser-playwright";
 
-export class NewActivity extends ActivityHandler {
-  async execute(): Promise<void> {
-    const activityKey = 'new-activity'
-    
-    // Check if already done
-    if (this.bot.accountJobState.isCompleted(this.bot.currentAccountEmail!, activityKey)) {
-      return
+import { TIMEOUTS } from "../../constants";
+import { getErrorMessage } from "../../util/core/Utils";
+import { Workers } from "../Workers";
+
+export class NewActivity extends Workers {
+  async doNewActivity(page: Page) {
+    this.bot.log(this.bot.isMobile, "NEW-ACTIVITY", "Starting new activity");
+
+    try {
+      // Execute activity logic
+      await this.performActivity(page);
+    } catch (error) {
+      this.bot.log(
+        this.bot.isMobile,
+        "NEW-ACTIVITY",
+        `Failed: ${getErrorMessage(error)}`,
+        "error",
+      );
     }
-    
-    // Execute activity
-    await this.performActivity()
-    
-    // Mark complete
-    this.bot.accountJobState.markCompleted(this.bot.currentAccountEmail!, activityKey)
   }
-  
-  private async performActivity(): Promise<void> {
+
+  private async performActivity(page: Page): Promise<void> {
     // Implementation
   }
 }
 ```
 
 2. **Register in Workers.ts**:
+
 ```typescript
 if (this.bot.config.workers.doNewActivity) {
-  await this.runActivity('NewActivity', async () => {
-    const activity = new NewActivity(this.bot)
-    await activity.execute()
-  })
+  await this.runActivity("NewActivity", async () => {
+    const activity = new NewActivity(this.bot);
+    await activity.execute();
+  });
 }
 ```
 
 3. **Add config option**:
+
 ```typescript
 // interface/Config.ts
 export interface ConfigWorkers {
-  doNewActivity: boolean
+  doNewActivity: boolean;
   // ... other activities
 }
 ```
@@ -260,28 +284,29 @@ export interface ConfigWorkers {
 
 ```typescript
 // src/dashboard/routes.ts
-apiRouter.get('/api/new-endpoint', async (req: Request, res: Response) => {
+apiRouter.get("/api/new-endpoint", async (req: Request, res: Response) => {
   try {
     // Validate input
-    const param = req.query.param as string
+    const param = req.query.param as string;
     if (!param) {
-      return sendError(res, 400, 'Missing param')
+      return sendError(res, 400, "Missing param");
     }
-    
+
     // Process
-    const result = await processData(param)
-    
+    const result = await processData(param);
+
     // Respond
-    res.json({ success: true, data: result })
+    res.json({ success: true, data: result });
   } catch (error) {
-    sendError(res, 500, getErr(error))
+    sendError(res, 500, getErr(error));
   }
-})
+});
 ```
 
 ### Debugging
 
 **Enable verbose logging**:
+
 ```bash
 # Full debug output
 DEBUG_REWARDS_VERBOSE=1 npm start
@@ -291,6 +316,7 @@ DEBUG=playwright:* npm start
 ```
 
 **Common debug points**:
+
 - Browser: `this.browser.func.makeDebugScreenshot(page, 'issue-name')`
 - State: `console.log(this.accountJobState.getState(email))`
 - Network: `await this.axios.request(config)` (auto-logged)
@@ -300,6 +326,7 @@ DEBUG=playwright:* npm start
 ## Testing Checklist
 
 Before committing changes:
+
 - [ ] `npm run build` succeeds
 - [ ] `npm run lint` passes (or `npm run lint:fix`)
 - [ ] Test with `npm start` (single account)
@@ -324,6 +351,7 @@ Before committing changes:
 ## Prohibited Patterns
 
 ❌ **DO NOT**:
+
 - Hardcode credentials or sensitive data
 - Use `any` type (use `unknown` + type guards)
 - Directly manipulate `dist/` (auto-generated from `src/`)
@@ -334,6 +362,7 @@ Before committing changes:
 - Store passwords in plaintext outside `accounts.jsonc`
 
 ✅ **DO**:
+
 - Use strict TypeScript checks
 - Add JSDoc comments for public APIs
 - Handle all promise rejections
@@ -346,14 +375,14 @@ Before committing changes:
 
 ## Key Dependencies
 
-| Package | Purpose | Notes |
-|---------|---------|-------|
-| `rebrowser-playwright` | Browser automation | Patched for detection evasion |
+| Package                 | Purpose                | Notes                            |
+| ----------------------- | ---------------------- | -------------------------------- |
+| `rebrowser-playwright`  | Browser automation     | Patched for detection evasion    |
 | `fingerprint-generator` | Browser fingerprinting | Generates realistic fingerprints |
-| `express` | Dashboard server | RESTful API + WebSockets |
-| `axios` | HTTP client | Used for Rewards API calls |
-| `cheerio` | HTML parsing | Extracting activity data |
-| `chalk` | Terminal colors | Pretty console output |
+| `express`               | Dashboard server       | RESTful API + WebSockets         |
+| `axios`                 | HTTP client            | Used for Rewards API calls       |
+| `cheerio`               | HTML parsing           | Extracting activity data         |
+| `chalk`                 | Terminal colors        | Pretty console output            |
 
 ---
 

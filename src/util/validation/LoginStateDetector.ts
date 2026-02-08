@@ -22,7 +22,7 @@ export enum LoginState {
 /**
  * Result of login state detection
  */
-export interface LoginStateDetection {
+interface LoginStateDetection {
   state: LoginState;
   confidence: "high" | "medium" | "low";
   url: string;

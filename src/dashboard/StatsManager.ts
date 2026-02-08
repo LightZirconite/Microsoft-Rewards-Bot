@@ -8,7 +8,7 @@ import path from "path";
 import { getErrorMessage } from "../util/core/Utils";
 import { log } from "../util/notifications/Logger";
 
-export interface DailyStats {
+interface DailyStats {
   date: string; // ISO date (YYYY-MM-DD)
   totalPoints: number;
   accountsCompleted: number;
@@ -18,7 +18,7 @@ export interface DailyStats {
   runDuration: number; // milliseconds
 }
 
-export interface AccountDailyStats {
+interface AccountDailyStats {
   email: string;
   date: string;
   pointsEarned: number;
@@ -29,7 +29,7 @@ export interface AccountDailyStats {
   completedAt?: string; // ISO timestamp
 }
 
-export interface GlobalStats {
+interface GlobalStats {
   totalRunsAllTime: number;
   totalPointsAllTime: number;
   averagePointsPerDay: number;
@@ -37,7 +37,7 @@ export interface GlobalStats {
   firstRunDate?: string;
 }
 
-export class StatsManager {
+class StatsManager {
   private statsDir: string;
   private dailyStatsPath: string;
   private globalStatsPath: string;
