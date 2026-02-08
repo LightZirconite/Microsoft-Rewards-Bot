@@ -28,9 +28,7 @@
 ## 📦 Backup Repository
 
 In case the main repository is unavailable:  
-🔗 **[git.justw.tf/LightZirconite/Microsoft-Rewards-Bot](https://git.justw.tf/LightZirconite/Microsoft-Rewards-Bot)** (Legacy branch)
-
-For V4: [Main branch backup](https://git.justw.tf/LightZirconite/Microsoft-Rewards-Bot/src/branch/main)
+🔗 **[git.justw.tf/LightZirconite/Microsoft-Rewards-Bot](https://git.justw.tf/LightZirconite/Microsoft-Rewards-Bot)**
 
 ---
 
