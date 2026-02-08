@@ -2,6 +2,7 @@ import { Page } from "rebrowser-playwright";
 
 import { DELAYS } from "../../constants";
 import { waitForElementSmart } from "../../util/browser/SmartWait";
+import { getErrorMessage } from "../../util/core/Utils";
 import { Workers } from "../Workers";
 
 export class ThisOrThat extends Workers {
@@ -63,12 +64,13 @@ export class ThisOrThat extends Workers {
         "Completed the ThisOrThat successfully",
       );
     } catch (error) {
-      await page.close().catch(() => {});
+      await page.close().catch(() => {
+        /* Page may already be closed */
+      });
       this.bot.log(
         this.bot.isMobile,
         "THIS-OR-THAT",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }

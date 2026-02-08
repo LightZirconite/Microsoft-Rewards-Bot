@@ -14,6 +14,7 @@ import {
     waitForNetworkIdle,
 } from "../util/browser/SmartWait";
 import { Retry } from "../util/core/Retry";
+import { getErrorMessage } from "../util/core/Utils";
 import { AdaptiveThrottler } from "../util/notifications/AdaptiveThrottler";
 import { logError } from "../util/notifications/Logger";
 import { getActivityStatsTracker } from "../util/state/ActivityStatsTracker";
@@ -103,7 +104,7 @@ export class Workers {
         this.bot.log(
           this.bot.isMobile,
           "DAILY-SET",
-          `Post-DailySet search failed: ${e instanceof Error ? e.message : e}`,
+          `Post-DailySet search failed: ${getErrorMessage(e)}`,
           "warn",
         );
       }
@@ -270,8 +271,7 @@ export class Workers {
       const freeRewards = new FreeRewards(this.bot);
       await freeRewards.doFreeRewards(page);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "FREE-REWARDS",
@@ -335,7 +335,7 @@ export class Workers {
           ACTIVITY_DELAYS.ACTIVITY_SPACING_MAX,
         );
       } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = getErrorMessage(error);
         this.bot.log(
           this.bot.isMobile,
           "ACTIVITY",
@@ -397,7 +397,7 @@ export class Workers {
 
   private async prepareActivityPage(
     page: Page,
-    selector: string,
+    _selector: string,
     throttle: AdaptiveThrottler,
   ): Promise<void> {
     // IMPROVED: Smart wait replaces fixed 10s timeout with adaptive detection
@@ -463,8 +463,7 @@ export class Workers {
         });
       }
     } catch (clickError) {
-      const errMsg =
-        clickError instanceof Error ? clickError.message : String(clickError);
+      const errMsg = getErrorMessage(clickError);
       this.bot.log(
         this.bot.isMobile,
         "ACTIVITY",

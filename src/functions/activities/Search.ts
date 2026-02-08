@@ -4,10 +4,12 @@ import { Page } from "rebrowser-playwright";
 import { Workers } from "../Workers";
 
 import { AxiosRequestConfig } from "axios";
+import { URLS } from "../../constants";
 import { Counters, DashboardData } from "../../interface/DashboardData";
 import { GoogleSearch } from "../../interface/Search";
 import { HumanTyping } from "../../util/browser/HumanTyping";
 import { waitForElementSmart } from "../../util/browser/SmartWait";
+import { getErrorMessage } from "../../util/core/Utils";
 import { secureRandom } from "../../util/security/SecureRandom";
 
 type GoogleTrendsResponse = [
@@ -20,7 +22,7 @@ const MOBILE_STAGNATION_LIMIT = 5; // Mobile searches: abort after 5 queries wit
 const DESKTOP_STAGNATION_LIMIT = 10; // Desktop searches: abort after 10 queries without points
 
 export class Search extends Workers {
-  private bingHome = "https://bing.com";
+  private bingHome = URLS.BING_HOME;
   private searchPageURL = "";
 
   public async doSearch(page: Page, data: DashboardData) {
@@ -30,7 +32,7 @@ export class Search extends Workers {
     try {
       page = await this.bot.browser.utils.getLatestTab(page);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorMsg = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-BING",
@@ -92,8 +94,7 @@ export class Search extends Workers {
         this.bot.log(
           this.bot.isMobile,
           "SEARCH-BING",
-          "Failed loading local queries fallback: " +
-            (e instanceof Error ? e.message : e),
+          "Failed loading local queries fallback: " + getErrorMessage(e),
           "error",
         );
       }
@@ -117,7 +118,7 @@ export class Search extends Workers {
         this.bot.log(
           this.bot.isMobile,
           "SEARCH-BING",
-          `Query diversity error: ${err instanceof Error ? err.message : err}`,
+          `Query diversity error: ${getErrorMessage(err)}`,
           "warn",
         );
       }
@@ -341,7 +342,7 @@ export class Search extends Workers {
         } catch (typeErr) {
           // As a robust fallback, navigate directly to the search results URL
           const q = encodeURIComponent(query);
-          const url = `https://www.bing.com/search?q=${q}`;
+          const url = `${URLS.BING_SEARCH}?q=${q}`;
           await searchPage.goto(url);
           navigatedDirectly = true;
         }
@@ -388,8 +389,7 @@ export class Search extends Workers {
           this.bot.log(
             this.bot.isMobile,
             "SEARCH-BING",
-            "Failed after 5 retries: " +
-              (error instanceof Error ? error.message : String(error)),
+            "Failed after 5 retries: " + getErrorMessage(error),
             "error",
           );
           break;
@@ -398,8 +398,7 @@ export class Search extends Workers {
         this.bot.log(
           this.bot.isMobile,
           "SEARCH-BING",
-          "Search failed: " +
-            (error instanceof Error ? error.message : String(error)),
+          "Search failed: " + getErrorMessage(error),
           "error",
         );
         this.bot.log(
@@ -493,8 +492,7 @@ export class Search extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-GOOGLE-TRENDS",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        "An error occurred: " + getErrorMessage(error),
         "error",
       );
     }
@@ -540,8 +538,7 @@ export class Search extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-BING-RELATED",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        "An error occurred: " + getErrorMessage(error),
         "error",
       );
     }
@@ -564,8 +561,7 @@ export class Search extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-RANDOM-SCROLL",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        "An error occurred: " + getErrorMessage(error),
         "error",
       );
     }
@@ -603,8 +599,7 @@ export class Search extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-RANDOM-CLICK",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        "An error occurred: " + getErrorMessage(error),
         "error",
       );
     }
@@ -651,8 +646,7 @@ export class Search extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-CLOSE-TABS",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        "An error occurred: " + getErrorMessage(error),
         "error",
       );
     }

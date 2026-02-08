@@ -7,6 +7,7 @@ import {
     Platform,
 } from "../../interface/UserAgentUtil";
 import { Retry } from "../core/Retry";
+import { getErrorMessage } from "../core/Utils";
 import { log } from "../notifications/Logger";
 import { secureRandomInt } from "../security/SecureRandom";
 
@@ -110,8 +111,7 @@ export async function getChromeVersion(isMobile: boolean): Promise<string> {
     throw log(
       isMobile,
       "USERAGENT-CHROME-VERSION",
-      "An error occurred: " +
-        (error instanceof Error ? error.message : String(error)),
+      "An error occurred: " + getErrorMessage(error),
       "error",
     );
   }
@@ -297,8 +297,7 @@ async function fetchEdgeVersionsOnce(
   }
 
   // Both methods failed
-  const errorMsg =
-    lastError instanceof Error ? lastError.message : String(lastError);
+  const errorMsg = getErrorMessage(lastError);
   throw new Error(`Failed to fetch Edge versions: ${errorMsg}`);
 }
 
@@ -405,7 +404,7 @@ export async function updateFingerprintUserAgent(
 
     return fingerprint;
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : String(error);
+    const errorMsg = getErrorMessage(error);
     log(
       isMobile,
       "USER-AGENT-UPDATE",

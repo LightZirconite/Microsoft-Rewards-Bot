@@ -300,7 +300,7 @@ export class Humanizer {
    * @param intensity - How complex the decision is (1-3)
    */
   async thinkTime(
-    context: string = "decision",
+    _context: string = "decision",
     intensity: number = 1,
   ): Promise<void> {
     if (this.cfg && this.cfg.enabled === false) return;

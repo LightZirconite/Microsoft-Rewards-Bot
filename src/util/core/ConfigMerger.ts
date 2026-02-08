@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { stripJsonComments } from "./JsoncParser";
+import { getErrorMessage } from "./Utils";
 
 /**
  * Smart configuration file merger
@@ -140,7 +141,7 @@ export class ConfigMerger {
     } catch (error) {
       return {
         success: false,
-        message: `Merge failed: ${error instanceof Error ? error.message : String(error)}`,
+        message: `Merge failed: ${getErrorMessage(error)}`,
         changes: [],
       };
     }
@@ -310,7 +311,7 @@ export class ConfigMerger {
     } catch (error) {
       return {
         success: false,
-        message: `Merge failed: ${error instanceof Error ? error.message : String(error)}`,
+        message: `Merge failed: ${getErrorMessage(error)}`,
         changes: [],
       };
     }

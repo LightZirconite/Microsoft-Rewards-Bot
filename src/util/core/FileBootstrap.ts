@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { ConfigMerger } from "./ConfigMerger";
+import { getErrorMessage } from "./Utils";
 
 /**
  * Bootstrap configuration files on startup
@@ -128,7 +129,7 @@ export class FileBootstrap {
     } catch (error) {
       console.error(
         `❌ Failed to create ${name} file:`,
-        error instanceof Error ? error.message : String(error),
+        getErrorMessage(error),
       );
       return false;
     }
@@ -233,7 +234,7 @@ export class FileBootstrap {
       } catch (error) {
         console.warn(
           `⚠️  Failed to migrate ${migration.from}:`,
-          error instanceof Error ? error.message : String(error),
+          getErrorMessage(error),
         );
       }
     }

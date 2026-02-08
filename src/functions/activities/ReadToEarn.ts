@@ -1,9 +1,10 @@
 import { AxiosRequestConfig } from "axios";
 import { randomBytes } from "crypto";
 
-import { Workers } from "../Workers";
-
+import { URLS } from "../../constants";
 import { DashboardData } from "../../interface/DashboardData";
+import { getErrorMessage } from "../../util/core/Utils";
+import { Workers } from "../Workers";
 
 export class ReadToEarn extends Workers {
   public async doReadToEarn(accessToken: string, data: DashboardData) {
@@ -18,7 +19,7 @@ export class ReadToEarn extends Workers {
           : "us";
 
       const userDataRequest: AxiosRequestConfig = {
-        url: "https://prod.rewardsplatform.microsoft.com/dapi/me",
+        url: URLS.REWARDS_API_ME,
         method: "GET",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -44,7 +45,7 @@ export class ReadToEarn extends Workers {
       for (let i = 0; i < articleCount; ++i) {
         jsonData.id = randomBytes(64).toString("hex");
         const claimRequest = {
-          url: "https://prod.rewardsplatform.microsoft.com/dapi/me/activities",
+          url: URLS.REWARDS_API_ACTIVITIES,
           method: "POST",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -92,8 +93,7 @@ export class ReadToEarn extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "READ-TO-EARN",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }

@@ -5,6 +5,8 @@ import fs from "fs";
 import { createServer } from "http";
 import path from "path";
 import { WebSocket, WebSocketServer } from "ws";
+import { DISCORD } from "../constants";
+import { getErrorMessage } from "../util/core/Utils";
 import { logEventEmitter } from "../util/notifications/Logger";
 import { apiRouter } from "./routes";
 import { DashboardLog, dashboardState } from "./state";
@@ -234,12 +236,11 @@ export class DashboardServer {
         await axios.post(
           webhookUrl,
           {
-            username: "Microsoft Rewards Bot",
-            avatar_url:
-              "https://raw.githubusercontent.com/LightZirconite/Microsoft-Rewards-Bot/refs/heads/main/assets/logo.png",
+            username: DISCORD.WEBHOOK_USERNAME,
+            avatar_url: DISCORD.AVATAR_URL,
             embeds: [embed],
           },
-          { timeout: 10000 },
+          { timeout: DISCORD.WEBHOOK_TIMEOUT },
         );
 
         dashLog(`Error report sent to Discord (id=${computedId})`, "log");
@@ -249,10 +250,7 @@ export class DashboardServer {
           id: computedId,
         });
       } catch (error) {
-        dashLog(
-          `Error reporting failed: ${error instanceof Error ? error.message : String(error)}`,
-          "error",
-        );
+        dashLog(`Error reporting failed: ${getErrorMessage(error)}`, "error");
         return res.status(500).json({ error: "Failed to send error report" });
       }
     });
@@ -306,10 +304,7 @@ export class DashboardServer {
       });
 
       tracked.on("error", (error) => {
-        dashLog(
-          `WebSocket error: ${error instanceof Error ? error.message : String(error)}`,
-          "error",
-        );
+        dashLog(`WebSocket error: ${getErrorMessage(error)}`, "error");
       });
 
       // Send initial data on connect
@@ -342,10 +337,7 @@ export class DashboardServer {
         try {
           tracked.ping();
         } catch (error) {
-          dashLog(
-            `WebSocket ping error: ${error instanceof Error ? error.message : String(error)}`,
-            "error",
-          );
+          dashLog(`WebSocket ping error: ${getErrorMessage(error)}`, "error");
           tracked.terminate();
           this.clients.delete(tracked);
         }
@@ -375,7 +367,7 @@ export class DashboardServer {
           client.send(payload);
         } catch (error) {
           dashLog(
-            `Error broadcasting update: ${error instanceof Error ? error.message : String(error)}`,
+            `Error broadcasting update: ${getErrorMessage(error)}`,
             "error",
           );
         }

@@ -2,6 +2,7 @@ import { Page } from "rebrowser-playwright";
 
 import { TIMEOUTS } from "../../constants";
 import { waitForElementSmart } from "../../util/browser/SmartWait";
+import { getErrorMessage } from "../../util/core/Utils";
 import { Workers } from "../Workers";
 
 export class Poll extends Workers {
@@ -42,12 +43,13 @@ export class Poll extends Workers {
         "Completed the poll successfully",
       );
     } catch (error) {
-      await page.close().catch(() => {});
+      await page.close().catch(() => {
+        /* Page may already be closed */
+      });
       this.bot.log(
         this.bot.isMobile,
         "POLL",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }

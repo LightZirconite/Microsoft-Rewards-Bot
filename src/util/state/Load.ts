@@ -10,7 +10,7 @@ import {
     ConfigScheduling,
 } from "../../interface/Config";
 import { removeTrailingCommas, stripJsonComments } from "../core/JsoncParser";
-import { Util } from "../core/Utils";
+import { getErrorMessage, Util } from "../core/Utils";
 
 const utils = new Util();
 
@@ -388,9 +388,7 @@ export function loadAccounts(): Account[] {
     const enabledAccounts = allAccounts.filter((acc) => acc.enabled !== false);
     return enabledAccounts;
   } catch (error) {
-    throw new Error(
-      `Failed to load accounts: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    throw new Error(`Failed to load accounts: ${getErrorMessage(error)}`);
   }
 }
 
@@ -443,9 +441,7 @@ export function loadConfig(): Config {
 
     return normalized;
   } catch (error) {
-    throw new Error(
-      `Failed to load config: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    throw new Error(`Failed to load config: ${getErrorMessage(error)}`);
   }
 }
 
@@ -512,7 +508,7 @@ export async function loadSessionData(
     };
   } catch (error) {
     throw new Error(
-      `Failed to load session data for ${email}: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to load session data for ${email}: ${getErrorMessage(error)}`,
     );
   }
 }
@@ -546,7 +542,7 @@ export async function saveSessionData(
     return sessionDir;
   } catch (error) {
     throw new Error(
-      `Failed to save session data for ${email}: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to save session data for ${email}: ${getErrorMessage(error)}`,
     );
   }
 }
@@ -577,7 +573,7 @@ export async function saveFingerprintData(
     return sessionDir;
   } catch (error) {
     throw new Error(
-      `Failed to save fingerprint for ${email}: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to save fingerprint for ${email}: ${getErrorMessage(error)}`,
     );
   }
 }

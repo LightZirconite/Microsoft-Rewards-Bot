@@ -2,6 +2,7 @@ import readline from "readline";
 import type { Locator, Page } from "rebrowser-playwright";
 import { MicrosoftRewardsBot } from "../../index";
 import { HumanTyping } from "../../util/browser/HumanTyping";
+import { getErrorMessage } from "../../util/core/Utils";
 import { logError } from "../../util/notifications/Logger";
 import { generateTOTP } from "../../util/security/Totp";
 import type { PasskeyHandler } from "./PasskeyHandler";
@@ -336,8 +337,7 @@ export class TotpHandler {
       this.bot.log(
         this.bot.isMobile,
         "LOGIN",
-        "2FA code entry error: " +
-          (error instanceof Error ? error.message : String(error)),
+        "2FA code entry error: " + getErrorMessage(error),
         "warn",
       );
     } finally {
@@ -431,8 +431,7 @@ export class TotpHandler {
       this.bot.log(
         this.bot.isMobile,
         "LOGIN",
-        "Failed to submit TOTP automatically: " +
-          (error instanceof Error ? error.message : String(error)),
+        "Failed to submit TOTP automatically: " + getErrorMessage(error),
         "warn",
       );
     }

@@ -212,7 +212,7 @@ export class BotController {
           this.log(`✓ Bot completed successfully for ${email}`, "log");
           dashboardState.updateAccount(email, { status: "completed" });
         } catch (error) {
-          const errMsg = error instanceof Error ? error.message : String(error);
+          const errMsg = getErrorMessage(error);
           if (this.stopRequested) {
             this.log(`⚠ Bot stopped for ${email} by user request`, "warn");
             dashboardState.updateAccount(email, { status: "idle" });
@@ -230,7 +230,7 @@ export class BotController {
 
       return { success: true, pid: process.pid };
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorMsg = getErrorMessage(error);
       this.log(`Failed to start bot for ${email}: ${errorMsg}`, "error");
       dashboardState.updateAccount(email, {
         status: "error",

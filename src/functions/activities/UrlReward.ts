@@ -1,5 +1,6 @@
 import { Page } from "rebrowser-playwright";
 
+import { getErrorMessage } from "../../util/core/Utils";
 import { Workers } from "../Workers";
 
 export class UrlReward extends Workers {
@@ -21,12 +22,13 @@ export class UrlReward extends Workers {
         "Completed the UrlReward successfully",
       );
     } catch (error) {
-      await page.close().catch(() => {});
+      await page.close().catch(() => {
+        /* Page may already be closed */
+      });
       this.bot.log(
         this.bot.isMobile,
         "URL-REWARD",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }

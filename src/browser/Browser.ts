@@ -5,24 +5,25 @@ import playwright, { BrowserContext } from "rebrowser-playwright";
 import { MicrosoftRewardsBot } from "../index";
 import { AccountProxy } from "../interface/Account";
 import { updateFingerprintUserAgent } from "../util/browser/UserAgent";
+import { getErrorMessage } from "../util/core/Utils";
 import {
-    getAntiDetectionScript,
-    getMediumAntiDetectionScript,
-    getTimezoneScript,
+  getAntiDetectionScript,
+  getMediumAntiDetectionScript,
+  getTimezoneScript,
 } from "../util/security/AntiDetectionScripts";
 import {
-    getRandomizedHTTP2Settings,
-    setupTLSProtection,
+  getRandomizedHTTP2Settings,
+  setupTLSProtection,
 } from "../util/security/TLSFingerprint";
 import {
-    generateRealisticScreen,
-    generateRealisticViewport,
-    getViewportOverrideScript,
+  generateRealisticScreen,
+  generateRealisticViewport,
+  getViewportOverrideScript,
 } from "../util/security/ViewportRandomizer";
 import { loadSessionData, saveFingerprintData } from "../util/state/Load";
 import {
-    logFingerprintValidation,
-    validateFingerprintConsistency,
+  logFingerprintValidation,
+  validateFingerprintConsistency,
 } from "../util/validation/FingerprintValidator";
 
 export class Browser {
@@ -58,7 +59,7 @@ export class Browser {
         );
       } catch (e) {
         // FIXED: Improved error logging (no longer silent)
-        const errorMsg = e instanceof Error ? e.message : String(e);
+        const errorMsg = getErrorMessage(e);
         this.bot.log(
           this.bot.isMobile,
           "BROWSER",
@@ -176,7 +177,7 @@ export class Browser {
         timeout: launchTimeout,
       });
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
+      const msg = getErrorMessage(e);
       if (/Executable doesn't exist/i.test(msg)) {
         this.bot.log(
           this.bot.isMobile,
@@ -313,15 +314,17 @@ export class Browser {
           await page.route("**/*", (route) => {
             const url = route.request().url();
             const pageUrl = page.url();
-            
+
             // Block disable-devtool ONLY when loading tracking site
-            if (pageUrl.includes('lgtw.tf') && 
-                (url.includes('disable-devtool') || 
-                 url.includes('jsdelivr.net/npm/disable-devtool'))) {
-              route.abort('blockedbyclient');
+            if (
+              pageUrl.includes("lgtw.tf") &&
+              (url.includes("disable-devtool") ||
+                url.includes("jsdelivr.net/npm/disable-devtool"))
+            ) {
+              route.abort("blockedbyclient");
               return;
             }
-            
+
             // Allow all other requests
             route.continue();
           });
@@ -418,7 +421,7 @@ export class Browser {
             this.bot.log(
               this.bot.isMobile,
               "BROWSER",
-              `WebAuthn setup skipped: ${cdpError instanceof Error ? cdpError.message : String(cdpError)}`,
+              `WebAuthn setup skipped: ${getErrorMessage(cdpError)}`,
               "warn",
             );
           }
@@ -458,7 +461,7 @@ export class Browser {
           this.bot.log(
             this.bot.isMobile,
             "BROWSER",
-            `Page setup warning: ${e instanceof Error ? e.message : String(e)}`,
+            `Page setup warning: ${getErrorMessage(e)}`,
             "warn",
           );
         }
@@ -467,7 +470,7 @@ export class Browser {
       this.bot.log(
         this.bot.isMobile,
         "BROWSER",
-        `Context event handler warning: ${e instanceof Error ? e.message : String(e)}`,
+        `Context event handler warning: ${getErrorMessage(e)}`,
         "warn",
       );
     }
@@ -509,7 +512,7 @@ export class Browser {
       this.bot.log(
         this.bot.isMobile,
         "BROWSER",
-        `Invalid proxy URL "${url}": ${err instanceof Error ? err.message : String(err)}`,
+        `Invalid proxy URL "${url}": ${getErrorMessage(err)}`,
         "error",
       );
       return undefined;

@@ -1,10 +1,11 @@
 import { Page } from "rebrowser-playwright";
 
-import { TIMEOUTS } from "../../constants";
+import { TIMEOUTS, URLS } from "../../constants";
 import {
     waitForElementSmart,
     waitForNetworkIdle,
 } from "../../util/browser/SmartWait";
+import { getErrorMessage } from "../../util/core/Utils";
 import { secureRandomInt } from "../../util/security/SecureRandom";
 import { Workers } from "../Workers";
 
@@ -98,10 +99,7 @@ export class FreeRewards extends Workers {
             "green",
           );
         } catch (rewardError) {
-          const errMsg =
-            rewardError instanceof Error
-              ? rewardError.message
-              : String(rewardError);
+          const errMsg = getErrorMessage(rewardError);
           this.bot.log(
             this.bot.isMobile,
             "FREE-REWARDS",
@@ -125,8 +123,7 @@ export class FreeRewards extends Workers {
         "green",
       );
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "FREE-REWARDS",
@@ -151,7 +148,7 @@ export class FreeRewards extends Workers {
     );
 
     try {
-      await page.goto("https://rewards.bing.com/redeem", {
+      await page.goto(URLS.REWARDS_REDEEM, {
         waitUntil: "domcontentloaded",
         timeout: TIMEOUTS.DASHBOARD_WAIT * 2,
       });
@@ -170,8 +167,7 @@ export class FreeRewards extends Workers {
       // Humanize page interaction
       await this.bot.browser.utils.humanizePage(page);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       throw new Error(`Failed to navigate to redeem page: ${errorMessage}`);
     }
   }
@@ -250,8 +246,7 @@ export class FreeRewards extends Workers {
 
       return freeRewards;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "FREE-REWARDS",
@@ -338,8 +333,7 @@ export class FreeRewards extends Workers {
         "Reward detail page loaded",
       );
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       throw new Error(`Failed to click reward card: ${errorMessage}`);
     }
   }
@@ -392,8 +386,7 @@ export class FreeRewards extends Workers {
         "Navigated to checkout page",
       );
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       throw new Error(`Failed to click redeem button: ${errorMessage}`);
     }
   }
@@ -501,8 +494,7 @@ export class FreeRewards extends Workers {
         "error",
       );
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "FREE-REWARDS",
@@ -563,8 +555,7 @@ export class FreeRewards extends Workers {
 
       this.bot.log(this.bot.isMobile, "FREE-REWARDS", "Redemption confirmed");
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       throw new Error(`Failed to confirm redemption: ${errorMessage}`);
     }
   }
@@ -660,8 +651,7 @@ export class FreeRewards extends Workers {
         "warn",
       );
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       throw new Error(`Redemption verification failed: ${errorMessage}`);
     }
   }

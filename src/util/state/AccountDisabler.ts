@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { stripJsonComments } from "../core/JsoncParser";
+import { getErrorMessage } from "../core/Utils";
 import { log } from "../notifications/Logger";
 
 /**
@@ -137,7 +138,7 @@ export async function disableBannedAccount(
     );
   } catch (error) {
     throw new Error(
-      `Failed to disable banned account ${email}: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to disable banned account ${email}: ${getErrorMessage(error)}`,
     );
   }
 }

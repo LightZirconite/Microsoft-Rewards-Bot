@@ -17,7 +17,7 @@ import {
     waitForElementSmart,
     waitForPageReady,
 } from "../util/browser/SmartWait";
-import { extractBalancedObject } from "../util/core/Utils";
+import { extractBalancedObject, getErrorMessage } from "../util/core/Utils";
 import { saveSessionData } from "../util/state/Load";
 
 export class BrowserFunc {
@@ -87,7 +87,7 @@ export class BrowserFunc {
       }
     } catch (error) {
       // Ignore errors in text check - not critical
-      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorMsg = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "GO-HOME",
@@ -123,7 +123,7 @@ export class BrowserFunc {
       try {
         await navigate();
       } catch (navErr) {
-        const msg = navErr instanceof Error ? navErr.message : String(navErr);
+        const msg = getErrorMessage(navErr);
         if (/ERR_ABORTED/i.test(msg)) {
           this.bot.log(
             this.bot.isMobile,
@@ -335,10 +335,7 @@ export class BrowserFunc {
 
             await this.bot.utils.wait(1000);
           } catch (reloadError) {
-            const reloadMsg =
-              reloadError instanceof Error
-                ? reloadError.message
-                : String(reloadError);
+            const reloadMsg = getErrorMessage(reloadError);
             this.bot.log(
               this.bot.isMobile,
               "GO-HOME",
@@ -365,8 +362,7 @@ export class BrowserFunc {
         );
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "GO-HOME",
@@ -470,8 +466,7 @@ export class BrowserFunc {
           logFn: (msg) =>
             this.bot.log(this.bot.isMobile, "BROWSER-FUNC", msg, "log"),
         }).catch((error) => {
-          const errorMsg =
-            error instanceof Error ? error.message : String(error);
+          const errorMsg = getErrorMessage(error);
           this.bot.log(
             this.bot.isMobile,
             "BROWSER-FUNC",
@@ -515,8 +510,7 @@ export class BrowserFunc {
 
       return dashboardData;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "GET-DASHBOARD-DATA",
@@ -560,7 +554,7 @@ export class BrowserFunc {
         break;
       } catch (re) {
         lastError = re;
-        const msg = re instanceof Error ? re.message : String(re);
+        const msg = getErrorMessage(re);
         this.bot.log(
           this.bot.isMobile,
           "GET-DASHBOARD-DATA",
@@ -617,7 +611,7 @@ export class BrowserFunc {
    * IMPROVED: Enhanced validation with structure checks
    */
   private async parseDashboardFromScript(
-    page: Page,
+    _page: Page,
     scriptContent: string,
   ): Promise<DashboardData | null> {
     try {
@@ -648,8 +642,7 @@ export class BrowserFunc {
 
       return null;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "GET-DASHBOARD-DATA",
@@ -729,8 +722,7 @@ export class BrowserFunc {
         totalEarnablePoints,
       };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "GET-BROWSER-EARNABLE-POINTS",
@@ -826,8 +818,7 @@ export class BrowserFunc {
 
       return points;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "GET-APP-EARNABLE-POINTS",
@@ -859,8 +850,7 @@ export class BrowserFunc {
 
       return data.userStatus.availablePoints;
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "GET-CURRENT-POINTS",
@@ -925,7 +915,7 @@ export class BrowserFunc {
             );
             return quizData;
           } catch (e) {
-            const msg = e instanceof Error ? e.message : String(e);
+            const msg = getErrorMessage(e);
             this.bot.log(
               this.bot.isMobile,
               "GET-QUIZ-DATA",
@@ -977,8 +967,7 @@ export class BrowserFunc {
         );
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "GET-QUIZ-DATA",
@@ -1015,8 +1004,7 @@ export class BrowserFunc {
       this.bot.log(
         this.bot.isMobile,
         "QUIZ-REFRESH",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        "An error occurred: " + getErrorMessage(error),
         "error",
       );
       return false;
@@ -1073,8 +1061,7 @@ export class BrowserFunc {
       this.bot.log(
         this.bot.isMobile,
         "GET-PUNCHCARD-ACTIVITY",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        "An error occurred: " + getErrorMessage(error),
         "error",
       );
     }
@@ -1102,8 +1089,7 @@ export class BrowserFunc {
         "Browser closed cleanly!",
       );
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = getErrorMessage(error);
       this.bot.log(
         this.bot.isMobile,
         "CLOSE-BROWSER",

@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import * as readline from "readline";
 import type { BrowserContext, Page } from "rebrowser-playwright";
+import { URLS } from "../constants";
+import { getErrorMessage } from "../util/core/Utils";
 import { log } from "../util/notifications/Logger";
 import { secureRandom } from "../util/security/SecureRandom";
 import { DataGenerator } from "./DataGenerator";
@@ -429,7 +431,7 @@ export class AccountCreator {
    * Checks for loading spinners, network activity, URL stability, and JS execution
    */
   private async waitForPageStable(
-    context: string,
+    _context: string,
     maxWaitMs: number = 15000,
   ): Promise<boolean> {
     // REDUCED: Don't log start - too verbose
@@ -478,7 +480,7 @@ export class AccountCreator {
       return true;
     } catch (error) {
       // Only log actual failures, not warnings
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       if (msg.includes("Timeout")) {
         // Timeout is not critical - page might still be usable
         return true;
@@ -700,7 +702,7 @@ export class AccountCreator {
    */
   private async verifyElementReady(
     selector: string,
-    context: string,
+    _context: string,
     timeoutMs: number = 10000,
   ): Promise<boolean> {
     try {
@@ -981,7 +983,7 @@ export class AccountCreator {
 
       return createdAccount;
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       log(false, "CREATOR", `Error during account creation: ${msg}`, "error");
       log(
         false,
@@ -2294,7 +2296,7 @@ export class AccountCreator {
 
       return birthdate;
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       log(false, "CREATOR", `Error filling birthdate: ${msg}`, "error");
       return null;
     }
@@ -2405,7 +2407,7 @@ export class AccountCreator {
 
       return true;
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       log(false, "CREATOR", `Error filling day dropdown: ${msg}`, "error");
       return false;
     }
@@ -2645,7 +2647,7 @@ export class AccountCreator {
 
       return true;
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       log(false, "CREATOR", `Error filling month dropdown: ${msg}`, "error");
       return false;
     }
@@ -2698,7 +2700,7 @@ export class AccountCreator {
 
       return true;
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       log(false, "CREATOR", `Error filling year input: ${msg}`, "error");
       return false;
     }
@@ -2938,7 +2940,7 @@ export class AccountCreator {
 
       return names;
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       log(false, "CREATOR", `Error filling names: ${msg}`, "error");
       return null;
     }
@@ -3168,7 +3170,7 @@ export class AccountCreator {
         );
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       log(
         false,
         "CREATOR",
@@ -3515,7 +3517,7 @@ export class AccountCreator {
     try {
       log(false, "CREATOR", "Navigating to rewards.bing.com...", "log", "cyan");
 
-      await this.page.goto("https://rewards.bing.com/", {
+      await this.page.goto(`${URLS.REWARDS_BASE}/`, {
         waitUntil: "networkidle",
         timeout: 30000,
       });
@@ -3539,7 +3541,7 @@ export class AccountCreator {
         await this.ensureRewardsEnrollment();
       }
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       log(
         false,
         "CREATOR",
@@ -4036,7 +4038,7 @@ export class AccountCreator {
 
       log(false, "CREATOR", "✅ Enrollment process completed", "log", "green");
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       log(
         false,
         "CREATOR",
@@ -4160,7 +4162,7 @@ ${JSON.stringify(accountData, null, 2)}`;
         "green",
       );
     } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
+      const msg = getErrorMessage(error);
       log(false, "CREATOR", `❌ Error saving account: ${msg}`, "error");
 
       // Try to save to a fallback file

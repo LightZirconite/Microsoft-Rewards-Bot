@@ -1,9 +1,10 @@
 import { AxiosRequestConfig } from "axios";
 import { randomBytes } from "crypto";
 
-import { Workers } from "../Workers";
-
+import { URLS } from "../../constants";
 import { DashboardData } from "../../interface/DashboardData";
+import { getErrorMessage } from "../../util/core/Utils";
+import { Workers } from "../Workers";
 
 export class DailyCheckIn extends Workers {
   public async doDailyCheckIn(accessToken: string, data: DashboardData) {
@@ -32,7 +33,7 @@ export class DailyCheckIn extends Workers {
       };
 
       const claimRequest: AxiosRequestConfig = {
-        url: "https://prod.rewardsplatform.microsoft.com/dapi/me/activities",
+        url: URLS.REWARDS_API_ACTIVITIES,
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -58,8 +59,7 @@ export class DailyCheckIn extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "DAILY-CHECK-IN",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }

@@ -142,8 +142,18 @@ export const SELECTORS = {
 
 export const URLS = {
   REWARDS_BASE: "https://rewards.bing.com",
+  REWARDS_REDEEM: "https://rewards.bing.com/redeem",
+  REWARDS_DASHBOARD: "https://www.bing.com/rewards/dashboard",
+  REWARDS_API_BASE: "https://prod.rewardsplatform.microsoft.com",
+  REWARDS_API_ME: "https://prod.rewardsplatform.microsoft.com/dapi/me",
+  REWARDS_API_ACTIVITIES:
+    "https://prod.rewardsplatform.microsoft.com/dapi/me/activities",
   APP_USER_DATA:
     "https://prod.rewardsplatform.microsoft.com/dapi/me?channel=SAAndroid&options=613",
+  BING_HOME: "https://www.bing.com",
+  BING_SEARCH: "https://www.bing.com/search",
+  BING_SIGNIN:
+    "https://www.bing.com/fd/auth/signin?action=interactive&provider=windows_live_id&return_url=https%3A%2F%2Fwww.bing.com%2F",
 } as const;
 
 export const DISCORD = {

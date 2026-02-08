@@ -2,6 +2,7 @@ import { Page } from "rebrowser-playwright";
 
 import { RETRY_LIMITS, TIMEOUTS } from "../../constants";
 import { waitForElementSmart } from "../../util/browser/SmartWait";
+import { getErrorMessage } from "../../util/core/Utils";
 import { Workers } from "../Workers";
 
 export class ABC extends Workers {
@@ -98,12 +99,13 @@ export class ABC extends Workers {
         );
       }
     } catch (error) {
-      await page.close().catch(() => {});
+      await page.close().catch(() => {
+        /* Page may already be closed */
+      });
       this.bot.log(
         this.bot.isMobile,
         "ABC",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }

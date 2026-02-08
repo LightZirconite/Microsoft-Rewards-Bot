@@ -1,5 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { Util } from "../core/Utils";
+import { getErrorMessage, Util } from "../core/Utils";
 import { secureRandomInt } from "../security/SecureRandom";
 
 type HttpClient =
@@ -101,7 +101,7 @@ export class QueryDiversityEngine {
         ? response.data
         : JSON.stringify(response.data);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorMsg = getErrorMessage(error);
       this.log(
         "QUERY-FETCH",
         `HTTP request failed for ${url}: ${errorMsg}`,
@@ -123,7 +123,7 @@ export class QueryDiversityEngine {
         const queries = await this.getFromSource(sourceName);
         allQueries.push(...queries.slice(0, this.config.maxQueriesPerSource));
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
+        const errorMsg = getErrorMessage(error);
         this.log(
           "QUERY-DIVERSITY",
           `Failed to fetch from ${sourceName}: ${errorMsg}`,

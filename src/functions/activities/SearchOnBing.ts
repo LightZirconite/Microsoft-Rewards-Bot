@@ -2,9 +2,9 @@ import * as fs from "fs";
 import path from "path";
 import type { Page } from "rebrowser-playwright";
 
-import { DELAYS } from "../../constants";
+import { DELAYS, URLS } from "../../constants";
 import { HumanTyping } from "../../util/browser/HumanTyping";
-import { getUpdateBranch } from "../../util/core/Utils";
+import { getErrorMessage, getUpdateBranch } from "../../util/core/Utils";
 import { Workers } from "../Workers";
 
 import { MorePromotion, PromotionalItem } from "../../interface/DashboardData";
@@ -42,7 +42,7 @@ export class SearchOnBing extends Workers {
         await HumanTyping.type(box, query, 1.5); // Fast typing (familiar search action)
         await page.keyboard.press("Enter");
       } catch {
-        const url = `https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+        const url = `${URLS.BING_SEARCH}?q=${encodeURIComponent(query)}`;
         await page.goto(url);
       }
       await this.bot.utils.wait(DELAYS.SEARCH_ON_BING_COMPLETE);
@@ -55,12 +55,13 @@ export class SearchOnBing extends Workers {
         "Completed the SearchOnBing successfully",
       );
     } catch (error) {
-      await page.close().catch(() => {});
+      await page.close().catch(() => {
+        /* Page may already be closed */
+      });
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-ON-BING",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
     }
@@ -109,8 +110,7 @@ export class SearchOnBing extends Workers {
       this.bot.log(
         this.bot.isMobile,
         "SEARCH-ON-BING-QUERY",
-        "An error occurred: " +
-          (error instanceof Error ? error.message : String(error)),
+        `An error occurred: ${getErrorMessage(error)}`,
         "error",
       );
       return title;

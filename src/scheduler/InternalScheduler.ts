@@ -1,5 +1,6 @@
 import cron from "node-cron";
 import type { Config } from "../interface/Config";
+import { getErrorMessage } from "../util/core/Utils";
 import { log } from "../util/notifications/Logger";
 import { secureRandomInt } from "../util/security/SecureRandom";
 
@@ -107,7 +108,7 @@ export class InternalScheduler {
       log(
         "main",
         "SCHEDULER",
-        `Failed to start scheduler: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to start scheduler: ${getErrorMessage(error)}`,
         "error",
       );
       return false;
@@ -275,7 +276,7 @@ export class InternalScheduler {
         return; // Success - exit retry loop
       } catch (error) {
         attempts++;
-        const errorMsg = error instanceof Error ? error.message : String(error);
+        const errorMsg = getErrorMessage(error);
         log(
           "main",
           "SCHEDULER",

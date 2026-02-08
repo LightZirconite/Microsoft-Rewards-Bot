@@ -14,6 +14,7 @@ import { Humanizer } from "./util/browser/Humanizer";
 import { getMemoryMonitor, stopMemoryMonitor } from "./util/core/MemoryMonitor";
 import {
     formatDetailedError,
+    getErrorMessage,
     normalizeRecoveryEmail,
     shortErrorMessage,
     Util,
@@ -118,7 +119,7 @@ export class MicrosoftRewardsBot {
       await validator.validate(this.config, this.accounts);
     } catch (error) {
       // Critical validation errors prevent startup
-      const errorMsg = error instanceof Error ? error.message : String(error);
+      const errorMsg = getErrorMessage(error);
       log("main", "VALIDATION", `Fatal validation error: ${errorMsg}`, "error");
       throw error; // Re-throw to stop execution
     }
@@ -439,7 +440,8 @@ export class MicrosoftRewardsBot {
           log(
             "main",
             "CONCLUSION",
-            `Failed to send conclusion: ${e instanceof Error ? e.message : String(e)}`,
+            `Failed to send conclusion: ${getErrorMessage(e)}`,
+
             "warn",
           );
         }
@@ -780,7 +782,7 @@ export class MicrosoftRewardsBot {
 
         // Run both and capture results with detailed logging
         const desktopPromise = this.Desktop(account).catch((e: unknown) => {
-          const msg = e instanceof Error ? e.message : String(e);
+          const msg = getErrorMessage(e);
           log(
             false,
             "TASK",
@@ -800,7 +802,7 @@ export class MicrosoftRewardsBot {
         const mobilePromise = mobileInstance
           .Mobile(account)
           .catch((e: unknown) => {
-            const msg = e instanceof Error ? e.message : String(e);
+            const msg = getErrorMessage(e);
             log(
               true,
               "TASK",
@@ -866,7 +868,7 @@ export class MicrosoftRewardsBot {
         // Sequential execution with safety checks
         this.isMobile = false;
         const desktopResult = await this.Desktop(account).catch((e) => {
-          const msg = e instanceof Error ? e.message : String(e);
+          const msg = getErrorMessage(e);
           log(
             false,
             "TASK",
@@ -891,7 +893,7 @@ export class MicrosoftRewardsBot {
           this.isMobile = true;
           const mobileResult = await this.Mobile(account).catch(
             (e: unknown) => {
-              const msg = e instanceof Error ? e.message : String(e);
+              const msg = getErrorMessage(e);
               log(
                 true,
                 "TASK",
@@ -1075,7 +1077,8 @@ export class MicrosoftRewardsBot {
       log(
         "main",
         "ALERT",
-        `Failed to send immediate ban alert: ${e instanceof Error ? e.message : e}`,
+        `Failed to send immediate ban alert: ${getErrorMessage(e)}`,
+
         "warn",
       );
     }
@@ -1266,7 +1269,8 @@ export class MicrosoftRewardsBot {
       log(
         "main",
         "STANDBY",
-        `Failed to engage standby: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to engage standby: ${getErrorMessage(error)}`,
+
         "warn",
       );
     }
@@ -1291,7 +1295,8 @@ export class MicrosoftRewardsBot {
       log(
         "main",
         "ALERT",
-        `Failed to send alert: ${e instanceof Error ? e.message : e}`,
+        `Failed to send alert: ${getErrorMessage(e)}`,
+
         "warn",
       );
     }
@@ -1380,8 +1385,7 @@ async function main(): Promise<void> {
       log(
         "main",
         "DASHBOARD",
-        "Could not load accounts: " +
-          (error instanceof Error ? error.message : String(error)),
+        "Could not load accounts: " + getErrorMessage(error),
         "warn",
       );
     }
@@ -1428,8 +1432,7 @@ async function main(): Promise<void> {
    */
   const attachHandlers = () => {
     process.on("unhandledRejection", (reason: unknown) => {
-      const errorMsg =
-        reason instanceof Error ? reason.message : String(reason);
+      const errorMsg = getErrorMessage(reason);
       const stack = reason instanceof Error ? reason.stack : undefined;
       log(
         "main",
@@ -1586,7 +1589,8 @@ async function main(): Promise<void> {
           log(
             "main",
             "UPDATE",
-            `Auto-update check failed: ${e instanceof Error ? e.message : String(e)}`,
+            `Auto-update check failed: ${getErrorMessage(e)}`,
+
             "warn",
           );
           return -1;
@@ -1631,8 +1635,7 @@ async function main(): Promise<void> {
                   log(
                     "main",
                     "MAIN-ERROR",
-                    "Fatal after update: " +
-                      (e instanceof Error ? e.message : e),
+                    "Fatal after update: " + getErrorMessage(e),
                     "error",
                   );
                   process.exit(1);
@@ -1646,7 +1649,8 @@ async function main(): Promise<void> {
         log(
           "main",
           "UPDATE",
-          `Update check failed (continuing): ${updateError instanceof Error ? updateError.message : String(updateError)}`,
+          `Update check failed (continuing): ${getErrorMessage(updateError)}`,
+
           "warn",
         );
       }
@@ -1681,7 +1685,8 @@ async function main(): Promise<void> {
             log(
               "main",
               "SCHEDULER-TASK",
-              `Scheduled run failed: ${error instanceof Error ? error.message : String(error)}`,
+              `Scheduled run failed: ${getErrorMessage(error)}`,
+
               "error",
             );
             throw error; // Re-throw for scheduler retry logic
@@ -1726,7 +1731,8 @@ async function main(): Promise<void> {
           log(
             "main",
             "MAIN",
-            `Initial run failed: ${error instanceof Error ? error.message : String(error)}`,
+            `Initial run failed: ${getErrorMessage(error)}`,
+
             "error",
           );
           // Scheduler still active - will retry at next scheduled time
@@ -1747,7 +1753,7 @@ async function main(): Promise<void> {
       log(
         "main",
         "MAIN-ERROR",
-        "Fatal during run: " + (e instanceof Error ? e.message : e),
+        "Fatal during run: " + getErrorMessage(e),
         "error",
       );
       gracefulExit(1);

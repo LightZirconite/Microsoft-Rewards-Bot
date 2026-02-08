@@ -1,6 +1,7 @@
 import { Browser } from "../browser/Browser";
 import { MicrosoftRewardsBot } from "../index";
 import type { AccountProxy } from "../interface/Account";
+import { getErrorMessage } from "../util/core/Utils";
 import { log } from "../util/notifications/Logger";
 import { secureRandom } from "../util/security/SecureRandom";
 import { AccountCreator } from "./AccountCreator";
@@ -26,7 +27,7 @@ function parseProxyArg(input?: string): AccountProxy | null {
       password: decodeURIComponent(parsed.password || ""),
     };
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
+    const msg = getErrorMessage(error);
     log(
       false,
       "CREATOR-CLI",
@@ -514,7 +515,7 @@ async function main(): Promise<void> {
       process.exit(1);
     }
   } catch (error) {
-    const msg = error instanceof Error ? error.message : String(error);
+    const msg = getErrorMessage(error);
     log(false, "CREATOR-CLI", "", "log"); // Empty line
     log(false, "CREATOR-CLI", "=".repeat(60), "error");
     log(false, "CREATOR-CLI", `❌ Fatal error: ${msg}`, "error");

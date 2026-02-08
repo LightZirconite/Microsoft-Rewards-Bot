@@ -2,6 +2,7 @@ import { AxiosRequestConfig } from "axios";
 import * as crypto from "crypto";
 import type { Page } from "rebrowser-playwright";
 
+import { URLS } from "../constants";
 import { MicrosoftRewardsBot } from "../index";
 import { OAuth } from "../interface/OAuth";
 import { HumanTyping } from "../util/browser/HumanTyping";
@@ -10,6 +11,7 @@ import {
     waitForPageReady,
 } from "../util/browser/SmartWait";
 import { Retry } from "../util/core/Retry";
+import { getErrorMessage } from "../util/core/Utils";
 import { logError } from "../util/notifications/Logger";
 import { saveSessionData } from "../util/state/Load";
 import {
@@ -153,7 +155,7 @@ export class Login {
         });
         navigationSucceeded = true;
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
+        const errorMsg = getErrorMessage(error);
 
         if (errorMsg.includes("chrome-error://chromewebdata/")) {
           this.bot.log(
@@ -255,11 +257,7 @@ export class Login {
       }
 
       const { success: navigationSucceeded, recoveryUsed } =
-        await this.navigateWithRetry(
-          page,
-          "https://www.bing.com/rewards/dashboard",
-          "LOGIN",
-        );
+        await this.navigateWithRetry(page, URLS.REWARDS_DASHBOARD, "LOGIN");
 
       if (!navigationSucceeded) {
         throw new Error(
@@ -344,7 +342,7 @@ export class Login {
       this.bot.log(this.bot.isMobile, "LOGIN", "Login complete");
       this.totpHandler.setTotpSecret(undefined);
     } catch (e) {
-      const errorMessage = e instanceof Error ? e.message : String(e);
+      const errorMessage = getErrorMessage(e);
       const stackTrace = e instanceof Error ? e.stack : undefined;
       this.bot.log(
         this.bot.isMobile,
@@ -637,7 +635,7 @@ export class Login {
           );
           // Fallback: navigate directly to rewards.bing.com
           try {
-            await page.goto("https://rewards.bing.com/", {
+            await page.goto(`${URLS.REWARDS_BASE}/`, {
               waitUntil: "domcontentloaded",
               timeout: DEFAULT_TIMEOUTS.navigationTimeout,
             });
@@ -646,7 +644,7 @@ export class Login {
             this.bot.log(
               this.bot.isMobile,
               "LOGIN",
-              `Manual navigation failed: ${navError instanceof Error ? navError.message : String(navError)}`,
+              `Manual navigation failed: ${getErrorMessage(navError)}`,
               "warn",
             );
           }
@@ -982,7 +980,7 @@ export class Login {
           this.bot.log(
             this.bot.isMobile,
             "LOGIN",
-            `Email submit click failed: ${e instanceof Error ? e.message : String(e)}`,
+            `Email submit click failed: ${getErrorMessage(e)}`,
             "warn",
           ),
         );
@@ -1008,7 +1006,7 @@ export class Login {
           this.bot.log(
             this.bot.isMobile,
             "LOGIN",
-            `Switch to password failed: ${e instanceof Error ? e.message : String(e)}`,
+            `Switch to password failed: ${getErrorMessage(e)}`,
             "warn",
           ),
         );
@@ -1086,7 +1084,7 @@ export class Login {
           this.bot.log(
             this.bot.isMobile,
             "LOGIN",
-            `Password submit failed: ${e instanceof Error ? e.message : String(e)}`,
+            `Password submit failed: ${getErrorMessage(e)}`,
             "warn",
           ),
         );
@@ -1334,7 +1332,7 @@ export class Login {
         this.bot.log(
           this.bot.isMobile,
           "LOGIN",
-          `goHome() failed: ${e instanceof Error ? e.message : String(e)}`,
+          `goHome() failed: ${getErrorMessage(e)}`,
           "warn",
         );
       }
@@ -1417,8 +1415,7 @@ export class Login {
         "Verifying Bing auth context",
       );
 
-      const verificationUrl =
-        "https://www.bing.com/fd/auth/signin?action=interactive&provider=windows_live_id&return_url=https%3A%2F%2Fwww.bing.com%2F";
+      const verificationUrl = URLS.BING_SIGNIN;
 
       const { success: navigationSucceeded } = await this.navigateWithRetry(
         page,
@@ -1526,7 +1523,7 @@ export class Login {
         );
       }
     } catch (e) {
-      const errorMsg = e instanceof Error ? e.message : String(e);
+      const errorMsg = getErrorMessage(e);
       this.bot.log(
         this.bot.isMobile,
         "LOGIN-BING",
