@@ -102,7 +102,12 @@ export class TotpHandler {
       }
       await this.handleSMSOrTotp(page);
     } catch (e) {
-      this.bot.log(this.bot.isMobile, "LOGIN", `2FA error: ${getErrorMessage(e)}`, "warn");
+      this.bot.log(
+        this.bot.isMobile,
+        "LOGIN",
+        `2FA error: ${getErrorMessage(e)}`,
+        "warn",
+      );
     }
   }
 

@@ -1,5 +1,5 @@
-import type { MicrosoftRewardsBot } from "../index";
 import { TIMEOUTS } from "../constants";
+import type { MicrosoftRewardsBot } from "../index";
 import { getErrorMessage } from "../util/core/Utils";
 import { log as botLog } from "../util/notifications/Logger";
 import { dashboardState } from "./state";
