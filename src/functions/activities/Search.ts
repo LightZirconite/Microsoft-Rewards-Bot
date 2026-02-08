@@ -2,7 +2,7 @@ import { AxiosRequestConfig } from "axios";
 import { platform } from "os";
 import { Page } from "rebrowser-playwright";
 
-import { URLS } from "../../constants";
+import { TIMEOUTS, URLS } from "../../constants";
 import { Counters, DashboardData } from "../../interface/DashboardData";
 import { GoogleSearch } from "../../interface/Search";
 import { HumanTyping } from "../../util/browser/HumanTyping";
@@ -156,7 +156,7 @@ export class Search extends Workers {
     // Go to bing
     await page.goto(this.searchPageURL ? this.searchPageURL : this.bingHome);
 
-    await this.bot.utils.wait(2000);
+    await this.bot.utils.wait(TIMEOUTS.MEDIUM_LONG);
 
     await this.bot.browser.utils.tryDismissAllMessages(page);
 
@@ -309,7 +309,7 @@ export class Search extends Workers {
           window.scrollTo(0, 0);
         });
 
-        await this.bot.utils.wait(500);
+        await this.bot.utils.wait(TIMEOUTS.SHORT);
 
         const searchBar = "#sb_form_q";
         // Prefer attached over visible to avoid strict visibility waits when overlays exist
@@ -346,7 +346,7 @@ export class Search extends Workers {
           navigatedDirectly = true;
         }
 
-        await this.bot.utils.wait(3000);
+        await this.bot.utils.wait(TIMEOUTS.LONG);
 
         // Bing.com in Chrome opens a new tab when searching via Enter; if we navigated directly, stay on current tab
         const resultPage = navigatedDirectly
@@ -357,12 +357,12 @@ export class Search extends Workers {
         await this.bot.browser.utils.reloadBadPage(resultPage);
 
         if (this.bot.config.searchSettings.scrollRandomResults) {
-          await this.bot.utils.wait(2000);
+          await this.bot.utils.wait(TIMEOUTS.MEDIUM_LONG);
           await this.randomScroll(resultPage);
         }
 
         if (this.bot.config.searchSettings.clickRandomResults) {
-          await this.bot.utils.wait(2000);
+          await this.bot.utils.wait(TIMEOUTS.MEDIUM_LONG);
           await this.clickRandomLink(resultPage);
         }
 
@@ -411,7 +411,7 @@ export class Search extends Workers {
         const lastTab = await this.bot.browser.utils.getLatestTab(searchPage);
         await this.closeTabs(lastTab);
 
-        await this.bot.utils.wait(4000);
+        await this.bot.utils.wait(TIMEOUTS.ACTIVITY_PAGE_LOAD);
       }
     }
 
@@ -577,7 +577,7 @@ export class Search extends Workers {
       await this.closeContinuePopup(page);
 
       // Stay for 10 seconds for page to load and "visit"
-      await this.bot.utils.wait(10000);
+      await this.bot.utils.wait(TIMEOUTS.EXTRA_LONG);
 
       // Will get current tab if no new one is created, this will always be the visited site or the result page if it failed to click
       let lastTab = await this.bot.browser.utils.getLatestTab(page);
@@ -622,10 +622,10 @@ export class Search extends Workers {
         // If only 1 tab is open, open a new one to search in
 
         const newPage = await browser.newPage();
-        await this.bot.utils.wait(1000);
+        await this.bot.utils.wait(TIMEOUTS.ONE_SECOND);
 
         await newPage.goto(this.bingHome);
-        await this.bot.utils.wait(3000);
+        await this.bot.utils.wait(TIMEOUTS.LONG);
         this.searchPageURL = newPage.url();
 
         this.bot.log(

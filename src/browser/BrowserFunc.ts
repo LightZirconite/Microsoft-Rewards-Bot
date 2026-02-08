@@ -131,7 +131,7 @@ export class BrowserFunc {
             `Navigation aborted, retrying once: ${msg}`,
             "warn",
           );
-          await this.bot.utils.wait(500);
+          await this.bot.utils.wait(TIMEOUTS.SHORT);
           await navigate();
         } else {
           throw navErr;
@@ -182,7 +182,7 @@ export class BrowserFunc {
         iteration <= RETRY_LIMITS.GO_HOME_MAX;
         iteration++
       ) {
-        await this.bot.utils.wait(500);
+        await this.bot.utils.wait(TIMEOUTS.SHORT);
         await this.bot.browser.utils.tryDismissAllMessages(page);
 
         // IMPROVED: Try primary selector first with increased timeouts
@@ -262,7 +262,7 @@ export class BrowserFunc {
         if (currentURL.hostname !== dashboardURL.hostname) {
           await this.bot.browser.utils.tryDismissAllMessages(page);
 
-          await this.bot.utils.wait(1000);
+          await this.bot.utils.wait(TIMEOUTS.ONE_SECOND);
           await page.goto(baseURL);
 
           // IMPROVED: Wait for page ready after redirect
@@ -333,7 +333,7 @@ export class BrowserFunc {
               window.scrollTo(0, 0);
             });
 
-            await this.bot.utils.wait(1000);
+            await this.bot.utils.wait(TIMEOUTS.ONE_SECOND);
           } catch (reloadError) {
             const reloadMsg = getErrorMessage(reloadError);
             this.bot.log(
@@ -345,7 +345,7 @@ export class BrowserFunc {
           }
         }
 
-        await this.bot.utils.wait(2000);
+        await this.bot.utils.wait(TIMEOUTS.MEDIUM_LONG);
       }
 
       // CRITICAL FIX: After max retries, throw error if activities still not found
@@ -579,7 +579,7 @@ export class BrowserFunc {
           }
         }
         if (attempt === maxAttempts) {
-          await this.bot.utils.wait(1000);
+          await this.bot.utils.wait(TIMEOUTS.ONE_SECOND);
         }
       }
     }

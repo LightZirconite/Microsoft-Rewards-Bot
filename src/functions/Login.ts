@@ -2,7 +2,7 @@ import { AxiosRequestConfig } from "axios";
 import * as crypto from "crypto";
 import type { Page } from "rebrowser-playwright";
 
-import { URLS } from "../constants";
+import { TIMEOUTS, URLS } from "../constants";
 import { MicrosoftRewardsBot } from "../index";
 import { OAuth } from "../interface/OAuth";
 import { HumanTyping } from "../util/browser/HumanTyping";
@@ -620,7 +620,7 @@ export class Login {
 
         try {
           await Promise.race([redirectPromise, timeoutPromise]);
-          await this.bot.utils.wait(500); // Let page stabilize
+          await this.bot.utils.wait(TIMEOUTS.SHORT); // Let page stabilize
           this.bot.log(
             this.bot.isMobile,
             "LOGIN",
@@ -639,7 +639,7 @@ export class Login {
               waitUntil: "domcontentloaded",
               timeout: DEFAULT_TIMEOUTS.navigationTimeout,
             });
-            await this.bot.utils.wait(500);
+            await this.bot.utils.wait(TIMEOUTS.SHORT);
           } catch (navError) {
             this.bot.log(
               this.bot.isMobile,
@@ -660,7 +660,7 @@ export class Login {
           "Portal not detected (8s), retrying once...",
           "warn",
         );
-        await this.bot.utils.wait(1000);
+        await this.bot.utils.wait(TIMEOUTS.ONE_SECOND);
         await this.bot.browser.utils.reloadBadPage(page);
         portalSelector = await this.waitForRewardsRoot(page, 5000);
       }
@@ -863,7 +863,7 @@ export class Login {
         "warn",
       );
       if (await this.totpHandler.tryAutoTotp(page, "pre-email TOTP")) {
-        await this.bot.utils.wait(500);
+        await this.bot.utils.wait(TIMEOUTS.SHORT);
         return;
       }
     }
@@ -896,7 +896,7 @@ export class Login {
         "pre-email challenge",
       );
       if (totpHandled) {
-        await this.bot.utils.wait(500);
+        await this.bot.utils.wait(TIMEOUTS.SHORT);
         emailResult = await waitForElementSmart(page, SELECTORS.emailInput, {
           initialTimeoutMs: 2000,
           extendedTimeoutMs: 5000,
@@ -928,7 +928,7 @@ export class Login {
         "pre-email retry",
       );
       if (totpRetry) {
-        await this.bot.utils.wait(500);
+        await this.bot.utils.wait(TIMEOUTS.SHORT);
       }
 
       emailResult = await waitForElementSmart(page, SELECTORS.emailInput, {
@@ -1037,7 +1037,7 @@ export class Login {
     );
 
     if (!passwordResult.found) {
-      await this.bot.utils.wait(500);
+      await this.bot.utils.wait(TIMEOUTS.SHORT);
       passwordResult = await waitForElementSmart(
         page,
         SELECTORS.passwordInput,
@@ -1327,7 +1327,7 @@ export class Login {
 
       try {
         await this.bot.browser.func.goHome(page);
-        await this.bot.utils.wait(1500);
+        await this.bot.utils.wait(TIMEOUTS.MEDIUM);
       } catch (e) {
         this.bot.log(
           this.bot.isMobile,

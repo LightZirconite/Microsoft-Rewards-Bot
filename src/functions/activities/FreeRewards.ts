@@ -478,12 +478,12 @@ export class FreeRewards extends Workers {
             "log",
             "green",
           );
-          await this.bot.utils.wait(2000); // Wait for post-CAPTCHA processing
+          await this.bot.utils.wait(TIMEOUTS.MEDIUM_LONG); // Wait for post-CAPTCHA processing
           return;
         }
 
         // Wait before next check
-        await this.bot.utils.wait(1500);
+        await this.bot.utils.wait(TIMEOUTS.MEDIUM);
       }
 
       // CAPTCHA timeout - log error but continue (may fail at confirmation)
@@ -577,7 +577,7 @@ export class FreeRewards extends Workers {
 
     try {
       // Wait for page to stabilize
-      await this.bot.utils.wait(2000);
+      await this.bot.utils.wait(TIMEOUTS.MEDIUM_LONG);
 
       // Check URL for success indicators
       const currentUrl = page.url();

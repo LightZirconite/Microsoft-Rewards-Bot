@@ -1,5 +1,7 @@
 import readline from "readline";
 import type { Locator, Page } from "rebrowser-playwright";
+
+import { TIMEOUTS } from "../../constants";
 import { MicrosoftRewardsBot } from "../../index";
 import { HumanTyping } from "../../util/browser/HumanTyping";
 import { getErrorMessage } from "../../util/core/Utils";
@@ -84,7 +86,7 @@ export class TotpHandler {
     try {
       // Dismiss any popups/dialogs before checking 2FA (Terms Update, etc.)
       await this.bot.browser.utils.tryDismissAllMessages(page);
-      await this.bot.utils.wait(500);
+      await this.bot.utils.wait(TIMEOUTS.SHORT);
 
       const usedTotp = await this.tryAutoTotp(
         page,
@@ -179,7 +181,7 @@ export class TotpHandler {
             )
             .catch(() => null);
           if (!resend) break;
-          await this.bot.utils.wait(60000);
+          await this.bot.utils.wait(TIMEOUTS.ONE_MINUTE);
           await resend
             .click()
             .catch(logError("LOGIN", "Resend click failed", this.bot.isMobile));
@@ -190,7 +192,7 @@ export class TotpHandler {
         .catch(
           logError("LOGIN", "Confirm send click failed", this.bot.isMobile),
         );
-      await this.bot.utils.wait(1500);
+      await this.bot.utils.wait(TIMEOUTS.MEDIUM);
       try {
         const el = await page.waitForSelector(
           '#displaySign, div[data-testid="displaySign"]>span',

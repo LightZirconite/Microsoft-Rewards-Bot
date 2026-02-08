@@ -357,7 +357,7 @@ export class Browser {
             if (window.navigator.credentials) {
               // Block credential creation (passkey enrollment)
               window.navigator.credentials.create = async function (
-                ...args: any[]
+                ..._args: unknown[]
               ) {
                 console.log("[MRS] Blocked WebAuthn credential.create() call");
                 // Reject with NotAllowedError (user cancelled)
@@ -369,7 +369,7 @@ export class Browser {
 
               // Block credential retrieval (passkey authentication)
               window.navigator.credentials.get = async function (
-                ...args: any[]
+                ..._args: unknown[]
               ) {
                 console.log("[MRS] Blocked WebAuthn credential.get() call");
                 // Reject with NotAllowedError (user cancelled)

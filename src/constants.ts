@@ -71,6 +71,7 @@ const LOGIN_TIMEOUT_DEFAULT_MS = 180000; // 3 minutes - default login timeout
 
 export const TIMEOUTS = {
   SHORT: 500,
+  ONE_SECOND: 1000,
   MEDIUM: 1500,
   MEDIUM_LONG: 2000,
   LONG: 3000,
