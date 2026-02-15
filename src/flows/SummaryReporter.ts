@@ -10,10 +10,11 @@
  * - Account history tracking (all-time stats)
  */
 
+import { DISCORD } from "../constants";
 import { Account } from "../interface/Account";
 import type { Config } from "../interface/Config";
 import { getErrorMessage } from "../util/core/Utils";
-import { ConclusionWebhook } from "../util/notifications/ConclusionWebhook";
+import { sendSummaryWebhook } from "../util/notifications/ConclusionWebhook";
 import { log } from "../util/notifications/Logger";
 import { Ntfy } from "../util/notifications/Ntfy";
 import {
@@ -66,7 +67,9 @@ export class SummaryReporter {
   async sendWebhookSummary(summary: SummaryData): Promise<void> {
     if (
       !this.config.webhook?.enabled &&
-      !this.config.conclusionWebhook?.enabled
+      !this.config.summaryWebhook?.enabled &&
+      !this.config.conclusionWebhook?.enabled &&
+      !this.config.stoat?.enabled
     ) {
       return;
     }
@@ -151,13 +154,13 @@ export class SummaryReporter {
 
       const color =
         bannedCount > 0
-          ? 0xff0000
+          ? DISCORD.COLOR_RED
           : summary.failureCount > 0
-            ? 0xffaa00
-            : 0x00ff00;
+            ? DISCORD.COLOR_ORANGE
+            : DISCORD.COLOR_GREEN;
 
       // Send main summary webhook
-      await ConclusionWebhook(
+      await sendSummaryWebhook(
         this.config,
         "🎉 Daily Rewards Collection Complete",
         description,
@@ -215,12 +218,12 @@ export class SummaryReporter {
       errorDescription += "• Verify credentials if login failed\n";
       errorDescription += "• Consider proxy rotation if rate-limited";
 
-      await ConclusionWebhook(
+      await sendSummaryWebhook(
         this.config,
         "⚠️ Execution Errors & Warnings",
         errorDescription,
         undefined,
-        0xff0000, // Red color for errors
+        DISCORD.COLOR_RED,
       );
     } catch (error) {
       log(

@@ -138,6 +138,73 @@ export class BrowserFunc {
         }
       }
 
+      // FIXED: Check for HTTP 400 error (common transient Microsoft issue)
+      // Microsoft sometimes returns HTTP 400 on first request - a simple reload fixes it
+      let http400Retries = 0;
+      const MAX_HTTP400_RETRIES = 3;
+
+      while (http400Retries <= MAX_HTTP400_RETRIES) {
+        await this.bot.utils.wait(TIMEOUTS.SHORT);
+
+        const content = await page.content().catch(() => "");
+        const hasHttp400 =
+          content.includes("HTTP ERROR 400") ||
+          content.includes("This page isn't working") ||
+          content.includes("This page is not working") ||
+          content.includes("Bad Request");
+
+        if (hasHttp400) {
+          http400Retries++;
+          this.bot.log(
+            this.bot.isMobile,
+            "GO-HOME",
+            `⚠️ HTTP 400 error detected (attempt ${http400Retries}/${MAX_HTTP400_RETRIES}) - this is a known Microsoft transient issue`,
+            "warn",
+          );
+
+          if (http400Retries <= MAX_HTTP400_RETRIES) {
+            this.bot.log(
+              this.bot.isMobile,
+              "GO-HOME",
+              "Reloading page to resolve HTTP 400...",
+              "log",
+            );
+
+            // Try reload first
+            try {
+              await page.reload({
+                waitUntil: "domcontentloaded",
+                timeout: 20000,
+              });
+              await this.bot.utils.wait(TIMEOUTS.MEDIUM);
+            } catch (reloadErr) {
+              // If reload fails, try full navigation
+              this.bot.log(
+                this.bot.isMobile,
+                "GO-HOME",
+                `Reload failed, trying full navigation: ${getErrorMessage(reloadErr)}`,
+                "warn",
+              );
+              await navigate();
+            }
+          } else {
+            this.bot.log(
+              this.bot.isMobile,
+              "GO-HOME",
+              "⛔ HTTP 400 persists after all retries - may indicate a real server issue or ban",
+              "error",
+            );
+            throw new Error(
+              "HTTP 400 error persists after retries - check account status manually at " +
+                baseURL,
+            );
+          }
+        } else {
+          // No HTTP 400, continue normally
+          break;
+        }
+      }
+
       // IMPROVED: Smart page readiness check after navigation
       // FIXED: Use timeoutMs parameter with increased timeout for slower networks
       const readyResult = await waitForPageReady(page, {
@@ -421,8 +488,8 @@ export class BrowserFunc {
         await this.goHome(target);
       }
 
-      // Reload with retry
-      await this.reloadPageWithRetry(target, 2);
+      // Reload with retry (IMPROVED: Increased to 3 attempts for better reliability)
+      await this.reloadPageWithRetry(target, 3);
 
       // IMPROVED: Smart wait for activities element
       const activitiesResult = await waitForElementSmart(
@@ -460,19 +527,32 @@ export class BrowserFunc {
         await this.goHome(target);
 
         // IMPROVED: Smart page readiness check instead of fixed wait
-        // FIXED: Use timeoutMs parameter with increased timeout
+        // FIXED: Increased timeout from 15s to 30s for slow/unstable connections
         await waitForPageReady(target, {
-          timeoutMs: 15000, // FIXED: 15s timeout for dashboard recovery
+          timeoutMs: 30000, // FIXED: 30s timeout for dashboard recovery (was 15s)
           logFn: (msg) =>
-            this.bot.log(this.bot.isMobile, "BROWSER-FUNC", msg, "log"),
+            this.bot.log(this.bot.isMobile, "GET-DASHBOARD-DATA", msg, "log"),
         }).catch((error) => {
           const errorMsg = getErrorMessage(error);
           this.bot.log(
             this.bot.isMobile,
-            "BROWSER-FUNC",
+            "GET-DASHBOARD-DATA",
             `Dashboard recovery load incomplete: ${errorMsg}`,
             "warn",
           );
+          // IMPROVED: Detect network issues specifically
+          if (
+            errorMsg.includes("net::") ||
+            errorMsg.includes("ERR_") ||
+            errorMsg.includes("timeout")
+          ) {
+            this.bot.log(
+              this.bot.isMobile,
+              "GET-DASHBOARD-DATA",
+              "⚠️ Network connectivity issue detected - check internet connection",
+              "warn",
+            );
+          }
         });
 
         scriptContent = await this.extractDashboardScript(target);
@@ -511,46 +591,132 @@ export class BrowserFunc {
       return dashboardData;
     } catch (error) {
       const errorMessage = getErrorMessage(error);
+
+      // IMPROVED: Categorize error types for better debugging
+      let errorCategory = "UNKNOWN";
+      if (errorMessage.includes("Timeout")) {
+        errorCategory = "TIMEOUT";
+      } else if (
+        errorMessage.includes("net::") ||
+        errorMessage.includes("ERR_")
+      ) {
+        errorCategory = "NETWORK";
+      } else if (
+        errorMessage.includes("closed") ||
+        errorMessage.includes("detached") ||
+        errorMessage.includes("ERR_ABORTED")
+      ) {
+        errorCategory = "BROWSER_CLOSED";
+      } else if (errorMessage.includes("suspended")) {
+        errorCategory = "ACCOUNT_SUSPENDED";
+      }
+
       this.bot.log(
         this.bot.isMobile,
         "GET-DASHBOARD-DATA",
-        `[getDashboardData] Failed to fetch dashboard data: ${errorMessage}`,
+        `[getDashboardData] Failed to fetch dashboard data [${errorCategory}]: ${errorMessage}`,
         "error",
       );
+
+      // IMPROVED: Provide actionable suggestions based on error type
+      if (errorCategory === "TIMEOUT" || errorCategory === "NETWORK") {
+        this.bot.log(
+          this.bot.isMobile,
+          "GET-DASHBOARD-DATA",
+          "💡 Suggestion: Check internet connection or try increasing timeouts in config",
+          "warn",
+        );
+      } else if (errorCategory === "BROWSER_CLOSED") {
+        this.bot.log(
+          this.bot.isMobile,
+          "GET-DASHBOARD-DATA",
+          "💡 Browser/page was closed or detached - this requires page recreation by the flow",
+          "warn",
+        );
+      } else if (errorCategory === "ACCOUNT_SUSPENDED") {
+        this.bot.log(
+          this.bot.isMobile,
+          "GET-DASHBOARD-DATA",
+          "💡 This account has been suspended by Microsoft and will be disabled",
+          "warn",
+        );
+      }
+
       throw error;
     }
   }
 
   /**
    * Reload page with retry logic
-   * FIXED: Added global timeout to prevent infinite retry loops
+   * FIXED: Increased timeout and added explicit reload timeout to prevent blocking
+   * IMPROVED: Added navigation fallback and better error handling
    */
   private async reloadPageWithRetry(
     page: Page,
     maxAttempts: number,
   ): Promise<void> {
     const startTime = Date.now();
-    const MAX_TOTAL_TIME_MS = 30000; // 30 seconds max total
+    const MAX_TOTAL_TIME_MS = 60000; // FIXED: 60 seconds max total (was 30s)
+    const RELOAD_TIMEOUT_MS = 20000; // FIXED: 20 seconds per reload attempt
     let lastError: unknown = null;
+    let successfulReload = false;
+
+    this.bot.log(
+      this.bot.isMobile,
+      "GET-DASHBOARD-DATA",
+      `Starting page reload with ${maxAttempts} max attempts`,
+      "log",
+    );
+
+    // FIXED: Check if page is valid before attempting reload
+    try {
+      const pageUrl = page.url();
+      if (!pageUrl) {
+        throw new Error("Page appears to be closed or detached");
+      }
+    } catch (checkError) {
+      this.bot.log(
+        this.bot.isMobile,
+        "GET-DASHBOARD-DATA",
+        `⛔ Page validation failed: ${getErrorMessage(checkError)} - cannot reload`,
+        "error",
+      );
+      throw new Error(
+        "Page is closed or invalid, cannot perform reload: " +
+          getErrorMessage(checkError),
+      );
+    }
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       // Check global timeout
-      if (Date.now() - startTime > MAX_TOTAL_TIME_MS) {
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime > MAX_TOTAL_TIME_MS) {
         this.bot.log(
           this.bot.isMobile,
           "GET-DASHBOARD-DATA",
-          `Reload retry exceeded total timeout (${MAX_TOTAL_TIME_MS}ms)`,
+          `Reload retry exceeded total timeout (${MAX_TOTAL_TIME_MS}ms after ${elapsedTime}ms)`,
           "warn",
         );
         break;
       }
 
       try {
-        await page.reload({ waitUntil: "domcontentloaded" });
+        // FIXED: Add explicit timeout to page.reload to prevent 30s default blocking
+        await page.reload({
+          waitUntil: "domcontentloaded",
+          timeout: RELOAD_TIMEOUT_MS,
+        });
         await this.bot.utils.wait(
           this.bot.isMobile ? TIMEOUTS.LONG : TIMEOUTS.MEDIUM,
         );
         lastError = null;
+        successfulReload = true;
+        this.bot.log(
+          this.bot.isMobile,
+          "GET-DASHBOARD-DATA",
+          `Page reloaded successfully on attempt ${attempt}`,
+          "log",
+        );
         break;
       } catch (re) {
         lastError = re;
@@ -558,33 +724,80 @@ export class BrowserFunc {
         this.bot.log(
           this.bot.isMobile,
           "GET-DASHBOARD-DATA",
-          `Reload failed attempt ${attempt}: ${msg}`,
+          `Reload failed attempt ${attempt}/${maxAttempts}: ${msg}`,
           "warn",
         );
-        if (msg.includes("has been closed")) {
-          if (attempt === 1) {
+
+        // FIXED: Handle fatal page states - detached, closed, or aborted
+        if (
+          msg.includes("has been closed") ||
+          msg.includes("detached") ||
+          msg.includes("ERR_ABORTED")
+        ) {
+          this.bot.log(
+            this.bot.isMobile,
+            "GET-DASHBOARD-DATA",
+            "⛔ Page closed/detached/aborted - cannot recover, stopping reload attempts",
+            "error",
+          );
+          break; // Cannot recover from closed/detached page
+        }
+
+        // IMPROVED: Try navigation fallback on timeout or network errors (but NOT on detached/aborted)
+        if (
+          (msg.includes("Timeout") ||
+            msg.includes("Navigation") ||
+            (msg.includes("net::") &&
+              !msg.includes("ERR_ABORTED") &&
+              !msg.includes("detached"))) &&
+          attempt < maxAttempts
+        ) {
+          this.bot.log(
+            this.bot.isMobile,
+            "GET-DASHBOARD-DATA",
+            "Reload timeout/navigation error - trying direct navigation fallback",
+            "warn",
+          );
+          try {
+            await this.goHome(page);
+            successfulReload = true; // Navigation worked as fallback
+            lastError = null;
             this.bot.log(
               this.bot.isMobile,
               "GET-DASHBOARD-DATA",
-              "Page appears closed; trying one navigation fallback",
+              "Direct navigation fallback succeeded",
+              "log",
+            );
+            break;
+          } catch (navError) {
+            this.bot.log(
+              this.bot.isMobile,
+              "GET-DASHBOARD-DATA",
+              `Navigation fallback failed: ${getErrorMessage(navError)}`,
               "warn",
             );
-            try {
-              await this.goHome(page);
-            } catch {
-              /* Final recovery attempt - failure is acceptable */
-            }
-          } else {
-            break;
+            // Continue to next retry attempt
           }
         }
-        if (attempt === maxAttempts) {
-          await this.bot.utils.wait(TIMEOUTS.ONE_SECOND);
+
+        // Wait before retry with exponential backoff
+        if (attempt < maxAttempts) {
+          const backoffDelay = TIMEOUTS.ONE_SECOND * attempt; // 1s, 2s, 3s...
+          await this.bot.utils.wait(backoffDelay);
         }
       }
     }
 
-    if (lastError) throw lastError;
+    // If we still have an error after all attempts, throw it
+    if (lastError && !successfulReload) {
+      this.bot.log(
+        this.bot.isMobile,
+        "GET-DASHBOARD-DATA",
+        "All reload attempts exhausted, throwing last error",
+        "error",
+      );
+      throw lastError;
+    }
   }
 
   /**
@@ -674,7 +887,24 @@ export class BrowserFunc {
       let dailySetPoints = 0;
       let morePromotionsPoints = 0;
 
+      // IMPROVED: Add timing information for performance monitoring
+      const startTime = Date.now();
+      this.bot.log(
+        this.bot.isMobile,
+        "GET-BROWSER-EARNABLE-POINTS",
+        "Fetching dashboard data to calculate points...",
+        "log",
+      );
+
       const data = await this.getDashboardData();
+
+      const fetchTime = Date.now() - startTime;
+      this.bot.log(
+        this.bot.isMobile,
+        "GET-BROWSER-EARNABLE-POINTS",
+        `Dashboard data fetched in ${fetchTime}ms`,
+        "log",
+      );
 
       // Desktop Search Points
       if (data.userStatus.counters.pcSearch?.length) {
@@ -723,13 +953,38 @@ export class BrowserFunc {
       };
     } catch (error) {
       const errorMessage = getErrorMessage(error);
+
+      // IMPROVED: Better error context for point calculation failures
+      let errorHint = "";
+      if (errorMessage.includes("Timeout") || errorMessage.includes("net::")) {
+        errorHint = " (likely network/timeout issue from getDashboardData)";
+      } else if (errorMessage.includes("suspended")) {
+        errorHint = " (account suspended by Microsoft)";
+      }
+
       this.bot.log(
         this.bot.isMobile,
         "GET-BROWSER-EARNABLE-POINTS",
-        `[getBrowserEarnablePoints] Failed to calculate earnable points: ${errorMessage}`,
+        `[getBrowserEarnablePoints] Failed to calculate earnable points${errorHint}: ${errorMessage}`,
         "error",
       );
-      throw error;
+
+      // IMPROVED: Return zero points instead of throwing to allow bot to continue
+      // This prevents complete failure if point calculation fails
+      this.bot.log(
+        this.bot.isMobile,
+        "GET-BROWSER-EARNABLE-POINTS",
+        "Returning zero points to allow bot to continue despite error",
+        "warn",
+      );
+
+      return {
+        dailySetPoints: 0,
+        morePromotionsPoints: 0,
+        desktopSearchPoints: 0,
+        mobileSearchPoints: 0,
+        totalEarnablePoints: 0,
+      };
     }
   }
 

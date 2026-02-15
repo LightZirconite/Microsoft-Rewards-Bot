@@ -100,9 +100,13 @@
     "enabled": false, // Enable Discord/Webhook notifications
     "url": "", // Discord webhook URL (or any webhook endpoint)
   },
-  "conclusionWebhook": {
-    "enabled": false, // Enable conclusion summary webhook
-    "url": "", // Webhook URL for final summary
+  "summaryWebhook": {
+    "enabled": false, // Enable summary webhook (sent at end of each run)
+    "url": "", // Webhook URL for final summary (Discord format)
+  },
+  "stoat": {
+    "enabled": false, // Enable Stoat/Revolt webhook notifications (open-source Discord alternative)
+    "url": "", // Stoat webhook URL: https://stoat.chat/api/webhooks/{id}/{token}
   },
   "ntfy": {
     "enabled": false, // Enable ntfy.sh push notifications

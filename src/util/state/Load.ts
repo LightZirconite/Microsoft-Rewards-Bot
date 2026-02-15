@@ -102,8 +102,12 @@ function normalizeConfig(raw: unknown): Config {
   const notifications = n.notifications ?? {};
   const webhook = notifications.webhook ??
     n.webhook ?? { enabled: false, url: "" };
-  const conclusionWebhook = notifications.conclusionWebhook ??
+  // Support both "summaryWebhook" (new) and "conclusionWebhook" (legacy)
+  const summaryWebhook = notifications.summaryWebhook ??
+    n.summaryWebhook ??
+    notifications.conclusionWebhook ??
     n.conclusionWebhook ?? { enabled: false, url: "" };
+  const stoat = notifications.stoat ?? n.stoat ?? { enabled: false, url: "" };
   const ntfy = notifications.ntfy ??
     n.ntfy ?? { enabled: false, url: "", topic: "", authToken: "" };
 
@@ -210,7 +214,8 @@ function normalizeConfig(raw: unknown): Config {
     logging, // retain full logging object for live webhook usage
     proxy: n.proxy ?? { proxyGoogleTrends: true, proxyBingTerms: true },
     webhook,
-    conclusionWebhook,
+    summaryWebhook,
+    stoat,
     ntfy,
     update: n.update,
     passesPerRun: passesPerRun,

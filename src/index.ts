@@ -13,11 +13,11 @@ import { BrowserUtil } from "./browser/BrowserUtil";
 import { Humanizer } from "./util/browser/Humanizer";
 import { getMemoryMonitor, stopMemoryMonitor } from "./util/core/MemoryMonitor";
 import {
-    formatDetailedError,
-    getErrorMessage,
-    normalizeRecoveryEmail,
-    shortErrorMessage,
-    Util,
+  formatDetailedError,
+  getErrorMessage,
+  normalizeRecoveryEmail,
+  shortErrorMessage,
+  Util,
 } from "./util/core/Utils";
 import { AxiosClient } from "./util/network/Axios";
 import { QueryDiversityEngine } from "./util/network/QueryDiversityEngine";
@@ -1064,9 +1064,9 @@ export class MicrosoftRewardsBot {
       // Only send immediate alert if explicitly enabled (default: false to avoid duplicates)
       if (!h || h.immediateBanAlert !== true) return;
 
-      const { ConclusionWebhook } =
+      const { sendSummaryWebhook } =
         await import("./util/notifications/ConclusionWebhook");
-      await ConclusionWebhook(
+      await sendSummaryWebhook(
         this.config,
         "🚫 Ban Detected (Real-time)",
         `**Account:** ${email}\n**Reason:** ${reason || "detected by heuristics"}\n\n*Full summary will be sent after completion*`,
@@ -1282,9 +1282,9 @@ export class MicrosoftRewardsBot {
     reason: string,
   ): Promise<void> {
     try {
-      const { ConclusionWebhook } =
+      const { sendSummaryWebhook } =
         await import("./util/notifications/ConclusionWebhook");
-      await ConclusionWebhook(
+      await sendSummaryWebhook(
         this.config,
         "🚨 Critical Security Alert",
         `**Account:** ${email}\n**Issue:** ${reason}\n**Status:** All accounts paused pending review`,

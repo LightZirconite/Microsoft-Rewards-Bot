@@ -27,7 +27,7 @@ export class SecurityUtils {
     const level: "warn" | "error" = severity === "critical" ? "error" : "warn";
     this.bot.log(this.bot.isMobile, "SECURITY", lines.join(" | "), level);
     try {
-      const { ConclusionWebhook } =
+      const { sendSummaryWebhook } =
         await import("../../util/notifications/ConclusionWebhook");
       const fields = [
         { name: "Account", value: incident.account },
@@ -41,7 +41,7 @@ export class SecurityUtils {
           ? [{ name: "Docs", value: incident.docsUrl }]
           : []),
       ];
-      await ConclusionWebhook(
+      await sendSummaryWebhook(
         this.bot.config,
         `🔐 ${incident.kind}`,
         Array.isArray(incident.details)

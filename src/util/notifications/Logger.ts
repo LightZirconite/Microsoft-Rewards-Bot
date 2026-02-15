@@ -1,11 +1,12 @@
 import axios from "axios";
 import chalk from "chalk";
 import { EventEmitter } from "events";
-import { DISCORD, LOGGER_CLEANUP } from "../../constants";
+import { DISCORD, LOGGER_CLEANUP, STOAT } from "../../constants";
 import { getErrorMessage } from "../core/Utils";
 import { loadConfig } from "../state/Load";
 import { sendErrorReport } from "./ErrorReportingWebhook";
 import { Ntfy } from "./Ntfy";
+import { sendStoatLogBatch } from "./StoatWebhook";
 
 // Event emitter for dashboard log streaming (NO FUNCTION INTERCEPTION)
 export const logEventEmitter = new EventEmitter();
@@ -80,10 +81,13 @@ function getBuffer(url: string): WebhookBuffer {
 }
 
 /**
- * Send batched log messages to Discord webhook
+ * Send batched log messages to a Discord webhook
  * Handles rate limiting and message size constraints
  */
-async function sendBatch(url: string, buf: WebhookBuffer): Promise<void> {
+async function sendDiscordBatch(
+  url: string,
+  buf: WebhookBuffer,
+): Promise<void> {
   if (buf.sending) return;
   buf.sending = true;
   while (buf.lines.length > 0) {
@@ -104,7 +108,6 @@ async function sendBatch(url: string, buf: WebhookBuffer): Promise<void> {
       continue;
     }
 
-    // Enhanced webhook payload with embed, username and avatar
     const payload = {
       username: DISCORD.WEBHOOK_USERNAME,
       avatar_url: DISCORD.AVATAR_URL,
@@ -126,11 +129,51 @@ async function sendBatch(url: string, buf: WebhookBuffer): Promise<void> {
         setTimeout(resolve, DISCORD.RATE_LIMIT_DELAY),
       );
     } catch (error) {
-      // Re-queue failed batch at front and exit loop
       buf.lines = chunk.concat(buf.lines);
-      // Note: Using stderr directly here to avoid circular dependency with log()
-      // This is an internal logger error that shouldn't go through the logging system
-      process.stderr.write(`[Webhook] live log delivery failed: ${error}\n`);
+      process.stderr.write(
+        `[Webhook] Discord live log delivery failed: ${error}\n`,
+      );
+      break;
+    }
+  }
+  buf.sending = false;
+}
+
+/**
+ * Send batched log messages to a Stoat/Revolt webhook
+ * Handles rate limiting and message size constraints
+ */
+async function sendStoatBatch(url: string, buf: WebhookBuffer): Promise<void> {
+  if (buf.sending) return;
+  buf.sending = true;
+  while (buf.lines.length > 0) {
+    const chunk: string[] = [];
+    let currentLength = 0;
+    while (buf.lines.length > 0) {
+      const next = buf.lines[0]!;
+      const projected =
+        currentLength + next.length + (chunk.length > 0 ? 1 : 0);
+      if (projected > STOAT.MAX_EMBED_LENGTH && chunk.length > 0) break;
+      buf.lines.shift();
+      chunk.push(next);
+      currentLength = projected;
+    }
+
+    const content = chunk.join("\n").slice(0, STOAT.MAX_EMBED_LENGTH);
+    if (!content) {
+      continue;
+    }
+
+    try {
+      await sendStoatLogBatch(url, content, determineColorFromContent(content));
+      await new Promise((resolve) =>
+        setTimeout(resolve, STOAT.RATE_LIMIT_DELAY),
+      );
+    } catch (error) {
+      buf.lines = chunk.concat(buf.lines);
+      process.stderr.write(
+        `[Webhook] Stoat live log delivery failed: ${error}\n`,
+      );
       break;
     }
   }
@@ -169,9 +212,7 @@ function determineColorFromContent(content: string): number {
  * Type guard to check if config has valid logging configuration
  * IMPROVED: Enhanced edge case handling and null checks
  */
-function hasValidLogging(
-  config: unknown,
-): config is {
+function hasValidLogging(config: unknown): config is {
   logging: {
     excludeFunc?: string[];
     webhookExcludeFunc?: string[];
@@ -225,14 +266,25 @@ function hasValidLogging(
   return true;
 }
 
-function enqueueWebhookLog(url: string, line: string) {
+function enqueueDiscordLog(url: string, line: string) {
   const buf = getBuffer(url);
   buf.lines.push(line);
   if (!buf.timer) {
     buf.timer = setTimeout(() => {
       buf.timer = undefined;
-      void sendBatch(url, buf);
+      void sendDiscordBatch(url, buf);
     }, DISCORD.DEBOUNCE_DELAY);
+  }
+}
+
+function enqueueStoatLog(url: string, line: string) {
+  const buf = getBuffer(url);
+  buf.lines.push(line);
+  if (!buf.timer) {
+    buf.timer = setTimeout(() => {
+      buf.timer = undefined;
+      void sendStoatBatch(url, buf);
+    }, STOAT.DEBOUNCE_DELAY);
   }
 }
 
@@ -409,7 +461,7 @@ export function log(
     message: redactSensitive(message),
   });
 
-  // Webhook streaming (live logs)
+  // Webhook streaming (live logs) - Discord and Stoat
   try {
     const loggingCfg: Record<string, unknown> = (logging || {}) as Record<
       string,
@@ -431,8 +483,17 @@ export function log(
       webhookExclude.some(
         (x: string) => x.toLowerCase() === title.toLowerCase(),
       );
-    if (liveUrl && !webhookExcluded) {
-      enqueueWebhookLog(liveUrl, cleanStr);
+
+    if (!webhookExcluded) {
+      // Discord live logs
+      if (liveUrl) {
+        enqueueDiscordLog(liveUrl, cleanStr);
+      }
+      // Stoat live logs
+      const stoatCfg = configData.stoat;
+      if (stoatCfg?.enabled && stoatCfg.url) {
+        enqueueStoatLog(stoatCfg.url, cleanStr);
+      }
     }
   } catch (error) {
     // Note: Using stderr directly to avoid recursion - this is an internal logger error

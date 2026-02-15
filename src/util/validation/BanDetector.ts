@@ -48,6 +48,19 @@ const BAN_PATTERNS: Array<{ re: RegExp; reason: string }> = [
 
 export function detectBanReason(input: unknown): BanStatus {
   const s = input instanceof Error ? input.message || "" : String(input || "");
+
+  // FIXED: Exclude transient HTTP 400 errors (Microsoft's known issue, not a ban)
+  // These are temporary server-side issues that resolve with a page reload
+  if (
+    /HTTP.*400|HTTP ERROR 400|page isn't working|page is not working/i.test(
+      s,
+    ) &&
+    !/persists after retries/i.test(s)
+  ) {
+    // HTTP 400 without "persists" = transient issue, not a ban
+    return { status: false, reason: "" };
+  }
+
   for (const p of BAN_PATTERNS) {
     if (p.re.test(s)) return { status: true, reason: p.reason };
   }

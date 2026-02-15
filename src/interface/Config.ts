@@ -19,7 +19,10 @@ export interface Config {
   logging?: ConfigLogging; // Preserve original logging object (for live webhook settings)
   proxy: ConfigProxy;
   webhook: ConfigWebhook;
-  conclusionWebhook?: ConfigWebhook; // Optional secondary webhook for final summary
+  summaryWebhook?: ConfigWebhook; // Summary webhook for final run reports (renamed from conclusionWebhook)
+  /** @deprecated Use summaryWebhook instead */
+  conclusionWebhook?: ConfigWebhook;
+  stoat?: ConfigStoat; // Stoat/Revolt webhook (open-source Discord alternative)
   ntfy: ConfigNtfy;
   update?: ConfigUpdate;
   passesPerRun?: number;
@@ -79,6 +82,12 @@ export interface ConfigNtfy {
 export interface ConfigProxy {
   proxyGoogleTrends: boolean;
   proxyBingTerms: boolean;
+}
+
+/** Stoat/Revolt webhook configuration (open-source Discord alternative) */
+export interface ConfigStoat {
+  enabled: boolean;
+  url: string; // Full Stoat webhook URL: https://stoat.chat/api/webhooks/{id}/{token}
 }
 
 export interface ConfigUpdate {

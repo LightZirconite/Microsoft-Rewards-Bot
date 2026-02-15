@@ -93,6 +93,15 @@ export const LOGGER_CLEANUP = {
   BUFFER_CLEANUP_INTERVAL_MS: TIMEOUTS.TEN_MINUTES,
 } as const;
 
+export const STOAT = {
+  WEBHOOK_TIMEOUT: 10000,
+  RATE_LIMIT_DELAY: 500,
+  MAX_EMBED_LENGTH: 2000,
+  DEBOUNCE_DELAY: 750,
+  WEBHOOK_USERNAME: "Microsoft-Rewards-Bot",
+  AVATAR_URL: DISCORD.AVATAR_URL,
+} as const;
+
 export const DISMISSAL_DELAYS = {
   BETWEEN_BUTTONS: 150, // Delay between dismissing multiple popup buttons
   AFTER_DIALOG_CLOSE: 1000, // Wait for dialog close animation to complete

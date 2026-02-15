@@ -122,7 +122,57 @@ export class DesktopFlow {
 
       await this.bot.browser.func.goHome(this.bot.homePage);
 
-      const data = await this.bot.browser.func.getDashboardData();
+      // FIXED: Add retry logic for getDashboardData in case of page detachment
+      let data;
+      let dashboardRetries = 0;
+      const MAX_DASHBOARD_RETRIES = 1; // One retry with fresh page
+
+      while (dashboardRetries <= MAX_DASHBOARD_RETRIES) {
+        try {
+          data = await this.bot.browser.func.getDashboardData();
+          break; // Success, exit retry loop
+        } catch (dashboardError) {
+          const msg = getErrorMessage(dashboardError);
+          if (
+            (msg.includes("detached") ||
+              msg.includes("ERR_ABORTED") ||
+              msg.includes("has been closed")) &&
+            dashboardRetries < MAX_DASHBOARD_RETRIES
+          ) {
+            this.bot.log(
+              false,
+              "DESKTOP-FLOW",
+              "⚠️ Page detached/closed during getDashboardData - recreating page",
+              "warn",
+            );
+
+            // Close old page and create new one
+            try {
+              await this.bot.homePage.close();
+            } catch {
+              /* Ignore close errors */
+            }
+
+            this.bot.homePage = await browser.newPage();
+            await this.bot.browser.func.goHome(this.bot.homePage);
+            dashboardRetries++;
+
+            this.bot.log(
+              false,
+              "DESKTOP-FLOW",
+              `Retrying getDashboardData with fresh page (attempt ${dashboardRetries + 1})`,
+              "log",
+            );
+          } else {
+            // Not a recoverable error or max retries reached
+            throw dashboardError;
+          }
+        }
+      }
+
+      if (!data) {
+        throw new Error("Failed to retrieve dashboard data after retries");
+      }
 
       const initial = data.userStatus.availablePoints;
 
