@@ -8,16 +8,13 @@
 
 **New Microsoft Rewards interface supported!** Try the latest version:
 
-👉 **[Microsoft Rewards Bot V4](https://github.com/LightZirconite/Microsoft-Rewards-Bot/tree/v4)** 👈
+👉 **[Microsoft Rewards Bot V4](https://github.com/LightZirconite/Microsoft-Rewards-Bot/tree/main)** 👈
 
 ---
 
 ## 📌 About This Version (Legacy)
 
 This is the **Legacy version** for the old Microsoft Rewards dashboard. It will continue to receive maintenance updates, but less frequently.
-
-**Need the old reliable version?** For the classic dashboard without new features, check:
-🔗 [TheNetsky's V3](https://github.com/TheNetsky/Microsoft-Rewards-Script/tree/v3)
 
 ---
 
