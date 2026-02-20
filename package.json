@@ -1,0 +1,55 @@
+{
+    "name": "microsoft-rewards-bot",
+    "version": "4.0.0",
+    "description": "Automated Microsoft Rewards points collector. Effortlessly accumulate rewards with intuitive navigation, multi-account support, Docker deployment, account creator, a dashboard, a Discord webbook, and an anti-detection system and more click here.",
+    "author": "LightZirconite",
+    "license": "SEE LICENSE IN LICENSE",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/LightZirconite/Microsoft-Rewards-Bot.git"
+    },
+    "homepage": "https://github.com/LightZirconite/Microsoft-Rewards-Bot#readme",
+    "bugs": {
+        "url": "https://github.com/LightZirconite/Microsoft-Rewards-Bot/issues"
+    },
+    "engines": {
+        "node": ">=25.0.0 <26.0.0"
+    },
+    "scripts": {
+        "start": "node ./dist/index.js",
+        "pre-build": "npm install && npx patchright install chromium",
+        "kill-chrome-win": "powershell -Command \"Get-Process | Where-Object { $_.MainModule.FileVersionInfo.FileDescription -eq 'Google Chrome for Testing' } | ForEach-Object { Stop-Process -Id $_.Id -Force }\"",
+        "clear-sessions": "node ./scripts/main/clearSessions.js",
+        "create-docker": "docker build -t microsoft-rewards-bot ."
+    },
+    "keywords": [
+        "Bing Rewards",
+        "Microsoft Rewards",
+        "Bot",
+        "Script",
+        "TypeScript",
+        "Playwright",
+        "Cheerio"
+    ],
+    "dependencies": {
+        "@libsql/client": "^0.17.0",
+        "axios": "^1.13.2",
+        "axios-retry": "^4.5.0",
+        "chalk": "^4.1.2",
+        "cheerio": "^1.0.0",
+        "fingerprint-generator": "^2.1.79",
+        "fingerprint-injector": "^2.1.79",
+        "ghost-cursor-playwright-port": "^1.4.3",
+        "http-proxy-agent": "^7.0.2",
+        "https-proxy-agent": "^7.0.6",
+        "ms": "^2.1.3",
+        "otpauth": "^9.4.1",
+        "p-queue": "^9.0.1",
+        "patchright": "^1.57.0",
+        "semver": "^7.7.3",
+        "socks-proxy-agent": "^8.0.5",
+        "ts-node": "^10.9.2",
+        "zod": "^4.3.5",
+        "bytenode": "^1.5.7"
+    }
+}
