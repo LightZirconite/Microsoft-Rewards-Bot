@@ -4,3 +4,4 @@ diagnostics/
 accounts.json
 config.json
 *.log
+plugins/*
