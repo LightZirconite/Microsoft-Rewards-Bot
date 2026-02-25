@@ -1,0 +1,618 @@
+MICROSOFT REWARDS BOT — PROPRIETARY SOFTWARE LICENSE AGREEMENT
+Version 1.0 — Effective February 7, 2026
+
+Copyright (c) 2025–2026 LightZirconite. All Rights Reserved.
+
+================================================================================
+
+BY DOWNLOADING, INSTALLING, COPYING, ACCESSING, OR USING THIS SOFTWARE, YOU
+("USER") ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO BE BOUND BY
+ALL TERMS AND CONDITIONS OF THIS LICENSE AGREEMENT ("AGREEMENT"). IF YOU DO NOT
+AGREE, YOU MUST IMMEDIATELY DELETE ALL COPIES OF THE SOFTWARE IN YOUR POSSESSION.
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1.  Definitions
+2.  Intellectual Property & Ownership
+3.  Grant of License
+4.  Source Code Access
+5.  Restrictions
+6.  Anti-Circumvention
+7.  Contributions & Contributor License Agreement
+8.  Monetization, License Tiers & Activation
+9.  Third-Party Services & Compliance
+10. Privacy & Data Collection
+11. Disclaimer of Warranty
+12. Limitation of Liability
+13. Indemnification
+14. Assumption of Risk
+15. Prohibited Uses & User Responsibility
+16. Age Restriction
+17. Export Compliance
+18. Termination
+19. Post-Termination Obligations
+20. Severability
+21. Entire Agreement
+22. Amendments
+23. Waiver
+24. Assignment
+25. Force Majeure
+26. Dispute Resolution & Governing Law
+27. Notices
+28. Contact
+
+================================================================================
+TERMS AND CONDITIONS
+================================================================================
+
+1.  DEFINITIONS
+
+    1.1 "Software" means Microsoft Rewards Bot, including but not limited
+    to all source code, object code, compiled binaries, obfuscated
+    distributions, scripts, configuration files, documentation, assets
+    (including logos, images, icons), databases, APIs, libraries,
+    dependencies, updates, patches, hotfixes, and any associated
+    materials provided by the Author.
+
+    1.2 "Author" means LightZirconite, the sole copyright holder, creator,
+    and owner of the Software, together with any entity, successor, or
+    assignee designated by LightZirconite.
+
+    1.3 "User" means any individual, corporation, partnership, organization,
+    or other legal entity that downloads, installs, accesses, or uses
+    the Software through any authorized distribution channel.
+
+    1.4 "Source Code Holder" means any individual who has been explicitly
+    granted written access to the unobfuscated source code by the
+    Author under a separate non-disclosure agreement (NDA).
+
+    1.5 "Licensed Distribution" means the obfuscated, compiled, packaged,
+    or otherwise transformed version of the Software distributed to
+    end Users.
+
+    1.6 "Contributor" means any individual or entity that submits code,
+    documentation, translations, bug reports, suggestions, designs,
+    or other materials to the Software project.
+
+    1.7 "Contribution" means any work of authorship, including modifications,
+    additions, bug fixes, features, documentation, translations, or
+    other materials submitted to the Author for inclusion in the
+    Software.
+
+    1.8 "Derivative Work" means any software, tool, script, service, or
+    product that is based on, incorporates, references, is inspired by,
+    or substantially replicates the functionality, design patterns,
+    architecture, or code of the Software.
+
+    1.9 "License Key" means any activation code, serial number, subscription
+    credential, token, or other mechanism used to verify authorization
+    to use the Software.
+
+    1.10 "Third-Party Services" means any external platforms, APIs, websites,
+    or services that the Software interacts with, including but not
+    limited to Microsoft Rewards, Bing, Microsoft accounts, and any
+    associated Microsoft services.
+
+2.  INTELLECTUAL PROPERTY & OWNERSHIP
+
+    2.1 The Software is the original, independent work of the Author.
+    The Author asserts full copyright ownership over the Software,
+    its architecture, design, implementation, and all associated
+    intellectual property.
+
+    2.2 The Software was independently designed and developed. Any
+    similarity to other software projects, whether open source or
+    proprietary, is coincidental and does not imply derivation,
+    affiliation, or endorsement.
+
+    2.3 The name "Microsoft Rewards Bot", the associated logos, branding,
+    and trade dress are the exclusive property of the Author. No User
+    or third party may use these marks without prior written consent.
+
+    2.4 All rights not expressly granted in this Agreement are reserved
+    by the Author. No implied licenses are granted under this
+    Agreement.
+
+    2.5 The Author reserves all moral rights, including the right of
+    attribution, the right of integrity, and the right to be
+    associated with the Software.
+
+3.  GRANT OF LICENSE
+
+    3.1 Subject to the terms of this Agreement and payment of any
+    applicable fees, the Author grants the User a limited,
+    non-exclusive, non-transferable, non-sublicensable, revocable
+    license to:
+
+         a) USE the Licensed Distribution for the User's own personal,
+            non-commercial purposes under the Free tier; OR
+
+         b) USE the Licensed Distribution in accordance with any purchased
+            license tier (Premium, Enterprise, or otherwise as defined by
+            the Author at the time of purchase).
+
+    3.2 This license is granted on a per-User, per-device basis unless
+    explicitly stated otherwise in a commercial agreement.
+
+    3.3 The Author may revoke this license at any time, for any reason
+    or no reason, with or without notice.
+
+4.  SOURCE CODE ACCESS
+
+    4.1 The Software's source code is NOT publicly available. Access to
+    the source code is granted ONLY at the Author's sole and absolute
+    discretion, and ONLY under a separate written Non-Disclosure
+    Agreement (NDA).
+
+    4.2 Source Code Holders MAY:
+    a) View and study the source code for educational purposes.
+    b) Modify the source code for their own PERSONAL USE ONLY on
+    devices they own or control.
+    c) Create local modifications for their own PERSONAL USE ONLY,
+    provided such modifications are never shared, published,
+    distributed, or made available to any third party.
+
+    4.3 Source Code Holders MAY NOT:
+    a) Redistribute the source code in any form (original, modified,
+    partial, excerpted, summarized, or paraphrased).
+    b) Share, publish, upload, post, email, transmit, or otherwise
+    make the source code available to ANY third party, whether
+    publicly or privately, directly or indirectly.
+    c) Sell, sublicense, lease, rent, loan, or commercially exploit
+    the source code or any portion thereof.
+    d) Use the source code, its structure, its architecture, its
+    algorithms, or its design patterns to create any Derivative
+    Work, competing product, or similar service.
+    e) Leak, disclose, or disseminate the source code by any means,
+    including but not limited to screenshots, screen recordings,
+    copy-pasting, dictation, description, or oral communication.
+    f) Store the source code on any publicly accessible server, cloud
+    storage, version control system, or file sharing platform.
+    g) Use automated tools to analyze, index, scrape, or extract
+    information from the source code.
+
+    4.4 Breach of any provision in Section 4 constitutes a material breach
+    of this Agreement and the applicable NDA, and will result in
+    immediate license termination and potential legal action, including
+    claims for injunctive relief and monetary damages.
+
+5.  RESTRICTIONS
+
+    All Users and Source Code Holders are expressly PROHIBITED from:
+
+    5.1 REVERSE ENGINEERING: Decompiling, disassembling, reverse
+    engineering, decrypting, de-obfuscating, or attempting by any
+    means to derive the source code, algorithms, data structures,
+    or trade secrets from any Licensed Distribution or any component
+    thereof.
+
+    5.2 REDISTRIBUTION: Copying, duplicating, distributing, sharing,
+    uploading, mirroring, torrenting, or otherwise making the Software
+    (or any portion thereof) available to any third party without
+    explicit prior written authorization from the Author.
+
+    5.3 RESALE: Selling, sublicensing, renting, leasing, lending, gifting,
+    bartering, or otherwise transferring the Software or any rights
+    therein. Only the Author and the Author's authorized agents may
+    commercialize the Software.
+
+    5.4 MODIFICATION OF DISTRIBUTED COPIES: Modifying, altering, adapting,
+    translating, or creating derivative works from any Licensed
+    Distribution. Only Source Code Holders may make personal-use
+    modifications as permitted in Section 4.2.
+
+    5.5 COMPETING USE: Using the Software, its code, its architecture,
+    its design concepts, its user interface patterns, or any knowledge
+    gained from the Software to build, develop, market, or distribute
+    a competing product, service, or Derivative Work.
+
+    5.6 MISREPRESENTATION: Claiming authorship, ownership, co-ownership,
+    or any form of affiliation with the Software without written
+    authorization. Falsely representing oneself as the Author or an
+    authorized representative is strictly prohibited.
+
+    5.7 BENCHMARKING & TESTING: Using the Software for competitive analysis,
+    benchmarking, or comparative testing without the Author's prior
+    written consent.
+
+    5.8 AUTOMATED ACCESS: Using the Software through any automated means
+    not provided by the Software itself, including but not limited to
+    bots, scripts, or scrapers that interact with the Software's
+    license verification or distribution systems.
+
+6.  ANTI-CIRCUMVENTION
+
+    6.1 Users SHALL NOT bypass, disable, tamper with, interfere with,
+    remove, alter, or circumvent any:
+    a) License verification or activation mechanism;
+    b) Obfuscation, encryption, or code protection;
+    c) Usage tracking, telemetry, or analytics;
+    d) Feature gating, tier restrictions, or access controls;
+    e) Digital rights management (DRM) or copy protection;
+    f) Watermarking, fingerprinting, or identification systems;
+    g) Rate limiting, usage quotas, or other technical restrictions.
+
+    6.2 Any attempt to circumvent the above protections, whether successful
+    or not, constitutes a material breach and is grounds for immediate
+    termination and legal action.
+
+    6.3 Users SHALL NOT create, distribute, or use any tool, patch, crack,
+    keygen, or other mechanism designed to circumvent any protection
+    in the Software.
+
+7.  CONTRIBUTIONS & CONTRIBUTOR LICENSE AGREEMENT
+
+    7.1 All Contributors MUST sign a Contributor License Agreement (CLA)
+    before any Contribution is accepted. The CLA is a separate binding
+    agreement.
+
+    7.2 By submitting a Contribution, the Contributor irrevocably grants
+    the Author:
+    a) A perpetual, irrevocable, worldwide, royalty-free, fully
+    paid-up, non-exclusive, sublicensable, transferable license to
+    use, reproduce, modify, display, perform, distribute, and
+    create derivative works from the Contribution.
+    b) Full commercial rights to monetize, sublicense, sell, and
+    distribute any work incorporating the Contribution.
+    c) The right to relicense the Contribution under any license
+    terms the Author chooses, including proprietary licenses.
+
+    7.3 Contributors represent and warrant that:
+    a) The Contribution is their original work.
+    b) They have the legal right to grant the licenses in Section 7.2.
+    c) The Contribution does not infringe any third-party intellectual
+    property rights, patents, trademarks, trade secrets, or
+    copyrights.
+    d) The Contribution does not contain any malicious code, backdoors,
+    viruses, or harmful components.
+
+    7.4 Contributors retain moral rights to their Contributions but agree
+    that the Author has exclusive commercial rights over the integrated
+    work.
+
+    7.5 Contributors acknowledge that:
+    a) They will NOT receive access to the full source code beyond the
+    scope strictly necessary for their Contribution, unless
+    explicitly granted by the Author under a separate NDA.
+    b) Their Contribution may be modified, rewritten, or removed at
+    the Author's sole discretion without notice.
+    c) They will not be entitled to any compensation, revenue share,
+    or royalty unless agreed in a separate written agreement.
+
+    7.6 The Author may reject any Contribution for any reason or no
+    reason, without obligation to explain.
+
+8.  MONETIZATION, LICENSE TIERS & ACTIVATION
+
+    8.1 The Author reserves the exclusive right to commercialize the
+    Software and offer it under different license tiers (e.g., Free,
+    Premium, Enterprise, Custom) with varying feature sets, usage
+    limits, support levels, or other terms as determined by the
+    Author.
+
+    8.2 License Keys are personal, single-user, and non-transferable
+    (unless explicitly stated for an Enterprise license).
+
+    8.3 Sharing, selling, distributing, leaking, publishing, or otherwise
+    making License Keys available to unauthorized parties is strictly
+    prohibited and will result in:
+    a) Immediate and permanent license revocation;
+    b) Blacklisting from all future license purchases;
+    c) Potential legal action for damages.
+
+    8.4 The Author reserves the right to modify pricing, features, and
+    license terms at any time. Existing paid licenses will be honored
+    for their purchased duration.
+
+    8.5 Refund policies, if any, are defined separately and at the
+    Author's sole discretion.
+
+9.  THIRD-PARTY SERVICES & COMPLIANCE
+
+    9.1 The Software interacts with Third-Party Services (including but
+    not limited to Microsoft Rewards, Bing, and Microsoft account
+    services). The Author does NOT own, operate, control, or have
+    any affiliation with these Third-Party Services.
+
+    9.2 Users are SOLELY responsible for ensuring their use of the
+    Software complies with the terms of service, acceptable use
+    policies, and applicable laws governing any Third-Party Service
+    they interact with through the Software.
+
+    9.3 The Author makes NO representation or warranty that the use of
+    the Software complies with the terms of service of any
+    Third-Party Service, including Microsoft's terms of service.
+
+    9.4 The Author is NOT responsible for any consequences arising from
+    the User's interaction with Third-Party Services, including but
+    not limited to account suspension, account bans, point forfeiture,
+    service restrictions, legal action by third parties, or any
+    other adverse outcome.
+
+    9.5 The Software is provided as a GENERAL-PURPOSE AUTOMATION TOOL.
+    How Users choose to configure and deploy it is entirely their
+    own decision and responsibility.
+
+10. PRIVACY & DATA COLLECTION
+
+    10.1 The Software may collect anonymized usage telemetry, error reports,
+    and diagnostic data to improve the Software. No personally
+    identifiable information (PII) is intentionally collected or
+    transmitted unless the User explicitly configures the Software
+    to do so (e.g., providing account credentials in configuration
+    files).
+
+    10.2 Users are responsible for the security of their own configuration
+    files, credentials, and data. The Author is NOT liable for any
+    data breach, credential leak, or unauthorized access resulting
+    from the User's failure to secure their environment.
+
+    10.3 The Software does not transmit User credentials to any server
+    operated by the Author. Credentials are used exclusively for
+    local browser automation as configured by the User.
+
+11. DISCLAIMER OF WARRANTY
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE", WITHOUT WARRANTY
+    OF ANY KIND, EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING BUT
+    NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR
+    A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, ACCURACY, RELIABILITY,
+    COMPLETENESS, COMPATIBILITY, SECURITY, AND FREEDOM FROM ERRORS OR
+    VIRUSES.
+
+    THE AUTHOR DOES NOT WARRANT THAT:
+    a) THE SOFTWARE WILL MEET THE USER'S REQUIREMENTS OR EXPECTATIONS;
+    b) THE SOFTWARE WILL OPERATE UNINTERRUPTED, ERROR-FREE, OR SECURELY;
+    c) ANY DEFECTS OR ERRORS WILL BE CORRECTED;
+    d) THE SOFTWARE WILL BE COMPATIBLE WITH ANY THIRD-PARTY SERVICE,
+    HARDWARE, OR SOFTWARE;
+    e) THE RESULTS OBTAINED FROM THE SOFTWARE WILL BE ACCURATE, RELIABLE,
+    OR SUITABLE FOR ANY PURPOSE;
+    f) THE SOFTWARE WILL NOT CAUSE ANY ADVERSE CONSEQUENCES TO THE USER'S
+    ACCOUNTS, DEVICES, DATA, OR REPUTATION.
+
+    THE USER ACKNOWLEDGES THAT NO ORAL OR WRITTEN INFORMATION OR ADVICE
+    GIVEN BY THE AUTHOR OR ANY REPRESENTATIVE SHALL CREATE A WARRANTY.
+
+12. LIMITATION OF LIABILITY
+
+    TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW:
+
+    12.1 IN NO EVENT SHALL THE AUTHOR, CONTRIBUTORS, AFFILIATES, AGENTS,
+    LICENSORS, OR SUPPLIERS BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+    SPECIAL, CONSEQUENTIAL, PUNITIVE, OR EXEMPLARY DAMAGES,
+    INCLUDING BUT NOT LIMITED TO:
+    a) Loss of profits, revenue, business, or anticipated savings;
+    b) Loss of data, goodwill, or reputation;
+    c) Account suspension, bans, or restrictions by any third party;
+    d) Point forfeiture or loss of virtual currency or rewards;
+    e) Cost of procurement of substitute goods or services;
+    f) Business interruption;
+    g) Any other intangible losses;
+    REGARDLESS OF THE CAUSE OF ACTION OR THE THEORY OF LIABILITY
+    (WHETHER IN CONTRACT, TORT, NEGLIGENCE, STRICT LIABILITY, OR
+    OTHERWISE), EVEN IF THE AUTHOR HAS BEEN ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGES.
+
+    12.2 THE AUTHOR'S TOTAL AGGREGATE LIABILITY TO ANY USER FOR ALL
+    CLAIMS ARISING OUT OF OR RELATED TO THIS AGREEMENT OR THE
+    SOFTWARE SHALL NOT EXCEED THE AMOUNT ACTUALLY PAID BY THE
+    USER TO THE AUTHOR FOR THE SOFTWARE IN THE TWELVE (12) MONTHS
+    PRECEDING THE CLAIM, OR FIFTY US DOLLARS ($50 USD), WHICHEVER
+    IS LESS.
+
+    12.3 THIS LIMITATION APPLIES REGARDLESS OF WHETHER THE ALLEGED
+    LIABILITY IS BASED ON CONTRACT, TORT, NEGLIGENCE, STRICT
+    LIABILITY, OR ANY OTHER BASIS.
+
+13. INDEMNIFICATION
+
+    13.1 The User agrees to indemnify, defend, and hold harmless the
+    Author, Contributors, affiliates, agents, licensors, suppliers,
+    and their respective officers, directors, employees, and assigns
+    ("Indemnified Parties") from and against any and all claims,
+    demands, actions, suits, proceedings, losses, damages,
+    liabilities, costs, and expenses (including reasonable attorneys'
+    fees and court costs) arising out of or relating to:
+
+         a) The User's use or misuse of the Software;
+         b) The User's violation of this Agreement;
+         c) The User's violation of any Third-Party Service terms;
+         d) The User's violation of any applicable law or regulation;
+         e) Any third-party claims resulting from the User's actions;
+         f) Any data breach caused by the User's negligence;
+         g) The User's failure to secure credentials or configuration.
+
+    13.2 This indemnification obligation survives termination of this
+    Agreement.
+
+14. ASSUMPTION OF RISK
+
+    14.1 The User EXPRESSLY ACKNOWLEDGES AND AGREES that:
+
+         a) The use of automation software to interact with third-party
+            platforms MAY violate those platforms' terms of service.
+         b) The Software is provided as a TOOL. The decision to use it,
+            and the manner in which it is used, is entirely the User's
+            own choice and responsibility.
+         c) The User assumes ALL RISK associated with the use of the
+            Software, including but not limited to the risk of account
+            suspension, permanent bans, loss of points or rewards,
+            legal action by third parties, and any other consequences.
+         d) The Author has made NO guarantees or promises regarding the
+            safety of using the Software with any third-party service.
+         e) The User has been WARNED that automation may result in adverse
+            consequences, and proceeds at their own risk despite this
+            warning.
+
+    14.2 THE USER WAIVES any and all claims against the Author and
+    Indemnified Parties arising from the consequences of using the
+    Software with any Third-Party Service.
+
+15. PROHIBITED USES & USER RESPONSIBILITY
+
+    15.1 The Software SHALL NOT be used for any purpose that is unlawful
+    or prohibited by this Agreement or by applicable law.
+
+    15.2 The User is SOLELY responsible for:
+    a) Compliance with all applicable local, state, national, and
+    international laws and regulations;
+    b) Compliance with the terms of service of any Third-Party
+    Service accessed through the Software;
+    c) Securing their own devices, credentials, and environments;
+    d) Any consequences resulting from their use of the Software.
+
+    15.3 The Author disclaims all liability for Users' actions. The
+    Software is a tool; how it is used is the User's responsibility.
+
+16. AGE RESTRICTION
+
+    16.1 The Software is intended for Users who are at least 18 years old
+    (or the age of majority in their jurisdiction, whichever is
+    higher).
+
+    16.2 By using the Software, the User represents and warrants that
+    they meet this age requirement.
+
+17. EXPORT COMPLIANCE
+
+    17.1 Users shall comply with all applicable export control laws and
+    regulations. The Software shall not be exported, re-exported,
+    or transferred to any country, entity, or person prohibited by
+    applicable export laws.
+
+18. TERMINATION
+
+    18.1 The Author may terminate this Agreement and revoke any User's
+    license at any time, for any reason or no reason, with or
+    without notice.
+
+    18.2 This Agreement automatically terminates if the User violates
+    any of its terms.
+
+    18.3 Upon termination:
+    a) All rights granted under this Agreement cease immediately;
+    b) The User must immediately destroy all copies of the Software;
+    c) The User must immediately cease all use of the Software;
+    d) License Keys are permanently revoked and may not be reused.
+
+    18.4 Termination does not relieve the User of obligations incurred
+    prior to termination, including indemnification obligations.
+
+19. POST-TERMINATION OBLIGATIONS
+
+    19.1 Sections 2, 4.3, 5, 6, 7.2, 9, 10, 11, 12, 13, 14, 15, 19,
+    20, 21, 26, and this Section survive termination indefinitely.
+
+    19.2 Upon request, the User must certify in writing that all copies
+    of the Software have been destroyed.
+
+20. SEVERABILITY
+
+    20.1 If any provision of this Agreement is held to be invalid,
+    illegal, or unenforceable by a court of competent jurisdiction,
+    such provision shall be modified to the minimum extent necessary
+    to make it valid, legal, and enforceable, while preserving the
+    original intent. If modification is not possible, the provision
+    shall be severed, and the remaining provisions shall remain in
+    full force and effect.
+
+21. ENTIRE AGREEMENT
+
+    21.1 This Agreement constitutes the entire agreement between the
+    User and the Author regarding the Software and supersedes all
+    prior or contemporaneous understandings, agreements, negotiations,
+    representations, and warranties, whether written or oral.
+
+    21.2 No terms or conditions set forth in any User purchase order,
+    acknowledgment, or other document shall modify this Agreement,
+    regardless of any failure by the Author to object.
+
+22. AMENDMENTS
+
+    22.1 The Author reserves the right to modify this Agreement at any
+    time. Updated terms will be posted alongside the Software or on
+    the official repository.
+
+    22.2 Continued use of the Software after any modification constitutes
+    acceptance of the updated terms.
+
+    22.3 If the User does not agree with the updated terms, they must
+    immediately cease use and destroy all copies of the Software.
+
+23. WAIVER
+
+    23.1 No failure or delay by the Author in exercising any right under
+    this Agreement shall constitute a waiver of that right. No
+    single or partial exercise of any right shall preclude any
+    further exercise of that right.
+
+24. ASSIGNMENT
+
+    24.1 The User may NOT assign, transfer, delegate, or sublicense
+    this Agreement or any rights hereunder without the Author's
+    prior written consent.
+
+    24.2 The Author may freely assign this Agreement and all rights
+    hereunder to any successor, assignee, or affiliate.
+
+25. FORCE MAJEURE
+
+    25.1 The Author shall not be liable for any failure or delay in
+    performance due to circumstances beyond reasonable control,
+    including but not limited to natural disasters, war, terrorism,
+    pandemics, government action, internet outages, power failures,
+    or third-party service disruptions.
+
+26. DISPUTE RESOLUTION & GOVERNING LAW
+
+    26.1 This Agreement shall be governed by and construed in accordance
+    with the laws of the jurisdiction in which the Author resides,
+    without regard to its conflict of law principles.
+
+    26.2 Any dispute arising out of or relating to this Agreement shall
+    first be attempted to be resolved through informal negotiation
+    between the parties for a period of at least thirty (30) days.
+
+    26.3 If informal negotiation fails, any dispute shall be resolved
+    through binding arbitration in accordance with the rules of the
+    applicable arbitration body in the Author's jurisdiction.
+
+    26.4 The User agrees that any legal proceedings shall be conducted
+    exclusively in the courts of the Author's jurisdiction.
+
+    26.5 The prevailing party in any dispute shall be entitled to recover
+    reasonable attorneys' fees and costs from the non-prevailing
+    party.
+
+    26.6 CLASS ACTION WAIVER: The User agrees that any dispute resolution
+    proceedings will be conducted only on an individual basis and
+    NOT as a class action, consolidated action, or representative
+    action.
+
+27. NOTICES
+
+    27.1 All notices required or permitted under this Agreement shall be
+    in writing and delivered to the contact information provided in
+    Section 28.
+
+    27.2 Notices are effective upon receipt (for electronic notices) or
+    upon delivery (for physical notices).
+
+28. CONTACT
+
+    For licensing inquiries, commercial licensing, NDA requests, CLA
+    submissions, source code access requests, or legal matters, contact
+    the Author through the official channels:
+
+    GitHub: https://github.com/LightZirconite/Microsoft-Rewards-Bot
+    Discord: https://discord.gg/k5uHkx9mne
+
+================================================================================
+(c) 2025–2026 LightZirconite
+All Rights Reserved.
+This Agreement is effective as of the date
+the User first accesses the Software.
+================================================================================
