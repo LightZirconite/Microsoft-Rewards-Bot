@@ -2,16 +2,6 @@
   <img src="https://img.shields.io/badge/Discord-Join-5865F2?style=for-the-badge&logo=discord&logoColor=white&logoWidth=40" alt="Discord" />
 </a>
 
-# Microsoft Rewards Bot
-
-## 🚀 V4 Available Now!
-
-**New Microsoft Rewards interface supported!** Try the latest version:
-
-👉 **[Microsoft Rewards Bot V4](https://github.com/LightZirconite/Microsoft-Rewards-Bot/tree/main)** 👈
-
----
-
 ## 📌 About This Version (Legacy)
 
 This is the **Legacy version** for the old Microsoft Rewards dashboard. It will continue to receive maintenance updates, but less frequently.
