@@ -2,10 +2,10 @@
   <img src="assets/logo.png" alt="Microsoft Rewards Bot" width="200">
 </p>
 
-<h1 align="center">Microsoft Rewards Bot</h1>
+<h1 align="center">Microsoft Rewards Bot V4 BETA</h1>
 
 <p align="center">
-  <strong>Automated Microsoft Rewards point collector — V4</strong><br>
+  <strong>Automated Microsoft Rewards point collector — V4 BETA</strong><br>
   Built for the <b>new</b> Microsoft Rewards dashboard
 </p>
 
